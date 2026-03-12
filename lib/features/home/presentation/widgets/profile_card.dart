@@ -1,8 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
+import 'package:qr_folio/core/utils/profile_nav.dart';
+import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 
 class ProfileCard extends StatelessWidget {
-  const ProfileCard({super.key});
+  final UserDataEntity user;
+  const ProfileCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +48,7 @@ class ProfileCard extends StatelessWidget {
                 top: 10,
                 left: 80,
                 child: Text(
-                  "Sparsh Acharya",
+                  user.core.name!,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -55,7 +60,7 @@ class ProfileCard extends StatelessWidget {
                 top: 35,
                 left: 80,
                 child: Text(
-                  "Software Developer",
+                  user.professional.designation,
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -65,6 +70,7 @@ class ProfileCard extends StatelessWidget {
               Positioned(
                 right: 0,
                 child: GestureDetector(
+                  onTap: () => goTpProfile(context, user),
                   child: Container(
                     width: 30,
                     height: 30,
@@ -90,11 +96,16 @@ class ProfileCard extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                     SizedBox(width: 3),
-                    Text(
-                      "Jaipur, Rajasthan, India",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textPrimary,
+                    SizedBox(
+                      width: 170,
+                      child: Text(
+                        user.personal.address,
+                        overflow: TextOverflow.ellipsis,
+
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -106,11 +117,16 @@ class ProfileCard extends StatelessWidget {
                   children: [
                     Icon(size: 15, Icons.phone, color: AppColors.textSecondary),
                     SizedBox(width: 3),
-                    Text(
-                      "+91 12345 67890",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textPrimary,
+                    SizedBox(
+                      width: 170,
+                      child: Text(
+                        user.core.phone,
+                        overflow: TextOverflow.ellipsis,
+
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -122,11 +138,16 @@ class ProfileCard extends StatelessWidget {
                   children: [
                     Icon(Icons.mail, size: 15, color: AppColors.textSecondary),
                     SizedBox(width: 3),
-                    Text(
-                      "mail@gmail.com",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textPrimary,
+                    SizedBox(
+                      width: 170,
+                      child: Text(
+                        user.core.email!,
+                        overflow: TextOverflow.ellipsis,
+
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -142,11 +163,7 @@ class ProfileCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     color: AppColors.cardPrimaryBg,
                   ),
-                  child: Icon(
-                    Icons.qr_code,
-                    size: 80,
-                    color: AppColors.chipPrimaryBg,
-                  ),
+                  child: Image.memory(user.qr.imageBytes, fit: BoxFit.contain),
                 ),
               ),
             ],

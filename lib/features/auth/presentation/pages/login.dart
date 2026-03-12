@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 import 'package:qr_folio/core/widgets/wallpaper.dart';
+import 'package:qr_folio/features/auth/presentation/bloc/auth_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -46,17 +48,20 @@ class _LoginPageState extends State<LoginPage> {
           Padding(
             padding: const EdgeInsets.all(30.0),
             child: Column(
-
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
                 SizedBox(height: 50),
-                Text(
-                  "QR Folio",
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
+                  ).createShader(bounds),
+                  child: Text(
+                    "QR Folio",
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 SizedBox(height: 30),
@@ -77,7 +82,9 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        context.read<AuthBloc>().add(AuthRegisterPageEvent());
+                      },
                       child: Text(
                         "Sign Up",
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -100,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   width: 300,
                   height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: AppColors.cardSecondaryBg,
                     borderRadius: BorderRadius.circular(10),
@@ -130,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   width: 300,
                   height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: AppColors.cardSecondaryBg,
                     borderRadius: BorderRadius.circular(10),
@@ -213,7 +220,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/home');
+                      context.read<AuthBloc>().add(
+                        AuthLoginEvent(
+                          email: "sparshacharya8644@gmail.com",
+                          password: "Zxcv@123",
+                          rememberMe: _rememberMe,
+                        ),
+                      );
                     },
                     child: Text(
                       "Login",

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 import 'package:qr_folio/core/widgets/wallpaper.dart';
+import 'package:qr_folio/features/auth/presentation/bloc/auth_bloc.dart';
 
 class Authpage extends StatelessWidget {
   const Authpage({super.key});
@@ -102,7 +104,7 @@ class Authpage extends StatelessWidget {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/login');
+                        context.read<AuthBloc>().add(AuthLoginPageEvent());
                       },
                       child: Text(
                         "Login",
@@ -124,7 +126,7 @@ class Authpage extends StatelessWidget {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/home');
+                        context.read<AuthBloc>().add(AuthRegisterPageEvent());
                       },
                       child: Text(
                         "Register",

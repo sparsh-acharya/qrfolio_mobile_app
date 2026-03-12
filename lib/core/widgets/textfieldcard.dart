@@ -5,18 +5,20 @@ class TextFieldCard extends StatefulWidget {
   final String label;
   final String value;
   final IconData icon;
-  final Function(String) onSave;
+  final Function(String)? onSave;
   final bool editable;
   final String? Function(String value)? validator;
+  final TextInputType keyboardType;
 
   const TextFieldCard({
     super.key,
     required this.label,
     required this.value,
     required this.icon,
-    required this.onSave,
+    this.onSave,
     this.editable = true,
     this.validator,
+    this.keyboardType = TextInputType.text,
   });
 
   @override
@@ -47,6 +49,7 @@ class _TextFieldCardState extends State<TextFieldCard> {
           content: Form(
             key: formKey,
             child: TextFormField(
+              keyboardType: widget.keyboardType,
               controller: controller,
               autofocus: true,
               style: const TextStyle(color: AppColors.textPrimary),
@@ -97,7 +100,7 @@ class _TextFieldCardState extends State<TextFieldCard> {
     if (!mounted) return;
 
     if (result != null && result.isNotEmpty) {
-      widget.onSave(result);
+      widget.onSave?.call(result);
     }
   }
 
@@ -108,7 +111,10 @@ class _TextFieldCardState extends State<TextFieldCard> {
       children: [
         Text(
           widget.label,
-          style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+          style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: AppColors.textTertiary,
+                fontWeight: FontWeight.w600,
+              ),
         ),
         const SizedBox(height: 5),
         Container(
@@ -117,7 +123,7 @@ class _TextFieldCardState extends State<TextFieldCard> {
           decoration: BoxDecoration(
             color: AppColors.cardSecondaryBg,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.cardSecondaryBg),
+            border: Border.all(color: AppColors.cardSecondaryBorder, width: 1),
           ),
           child: Stack(
             children: [
@@ -155,7 +161,7 @@ class _TextFieldCardState extends State<TextFieldCard> {
                     onPressed: () => _editField(
                       widget.label,
                       widget.value,
-                      widget.onSave,
+                      widget.onSave!,
                       validator: widget.validator,
                     ),
                   ),

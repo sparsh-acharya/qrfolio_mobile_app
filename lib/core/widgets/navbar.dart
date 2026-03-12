@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
+import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 
 class Navbar extends StatefulWidget {
   int currentIndex;
@@ -39,8 +41,8 @@ class _NavbarState extends State<Navbar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(Icons.home, 0, route: "/home"),
-                _buildNavItem(Icons.apartment, 1, route: "/professional"),
+                _buildNavItem(Icons.home, 0),
+                _buildNavItem(Icons.apartment, 1),
                 _buildNavItem(Icons.perm_media_outlined, 2),
                 _buildNavItem(Icons.qr_code, 3),
                 _buildNavItem(Icons.settings, 4),
@@ -52,14 +54,14 @@ class _NavbarState extends State<Navbar> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, {String route = "/home"}) {
+  Widget _buildNavItem(IconData icon, int index) {
     final isSelected = widget.currentIndex == index;
     return IconButton(
       onPressed: () {
         setState(() {
           widget.currentIndex = index;
         });
-        Navigator.pushNamed(context, route);
+        context.read<UserBloc>().add(NavItemSelectedEvent(index: index));
       },
 
       icon: Icon(icon, size: 30),
