@@ -29,7 +29,8 @@ class BusinessTab extends StatefulWidget {
   State<BusinessTab> createState() => _BusinessTabState();
 }
 
-class _BusinessTabState extends State<BusinessTab> {
+class _BusinessTabState extends State<BusinessTab>
+    with SingleTickerProviderStateMixin {
   late String _company;
   late String _position;
   late String _referalCode;
@@ -38,6 +39,13 @@ class _BusinessTabState extends State<BusinessTab> {
   late String _companyEmail;
   late String _location;
   late String _description;
+
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 9;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +57,51 @@ class _BusinessTabState extends State<BusinessTab> {
     _location = widget.location;
     _description = widget.description;
     _summary = widget.summary;
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.08;
+      final end = (start + 0.35).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.08;
+      final end = (start + 0.35).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
   }
 
   @override
@@ -58,96 +111,123 @@ class _BusinessTabState extends State<BusinessTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 20),
-          Text(
-            'Business Information',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          _animatedItem(
+            0,
+            Text(
+              'Business Information',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
           const SizedBox(height: 20),
-          TextFieldCard(
-            label: 'Company',
-            value: _company,
-            icon: Icons.business,
-            onSave: (value) {
-              setState(() => _company = value);
-              widget.onUpdate?.call('companyName', value);
-            },
+          _animatedItem(
+            1,
+            TextFieldCard(
+              label: 'Company',
+              value: _company,
+              icon: Icons.business,
+              onSave: (value) {
+                setState(() => _company = value);
+                widget.onUpdate?.call('companyName', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Position',
-            value: _position,
-            icon: Icons.badge,
-            onSave: (value) {
-              setState(() => _position = value);
-              widget.onUpdate?.call('designation', value);
-            },
+          _animatedItem(
+            2,
+            TextFieldCard(
+              label: 'Position',
+              value: _position,
+              icon: Icons.badge,
+              onSave: (value) {
+                setState(() => _position = value);
+                widget.onUpdate?.call('designation', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Referal Code',
-            value: _referalCode,
-            icon: Icons.confirmation_num,
-            onSave: (value) {
-              setState(() => _referalCode = value);
-              widget.onUpdate?.call('companyReferralCode', value);
-            },
+          _animatedItem(
+            3,
+            TextFieldCard(
+              label: 'Referal Code',
+              value: _referalCode,
+              icon: Icons.confirmation_num,
+              onSave: (value) {
+                setState(() => _referalCode = value);
+                widget.onUpdate?.call('companyReferralCode', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            keyboardType: TextInputType.number,
-            label: 'Experience (in years)',
-            value: _experience,
-            icon: Icons.star_rate_outlined,
-            onSave: (value) {
-              setState(() => _experience = value);
-              widget.onUpdate?.call('companyExperience', value);
-            },
+          _animatedItem(
+            4,
+            TextFieldCard(
+              keyboardType: TextInputType.number,
+              label: 'Experience (in years)',
+              value: _experience,
+              icon: Icons.star_rate_outlined,
+              onSave: (value) {
+                setState(() => _experience = value);
+                widget.onUpdate?.call('companyExperience', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Description',
-            value: _description,
-            icon: Icons.description,
-            onSave: (value) {
-              setState(() => _description = value);
-              widget.onUpdate?.call('companyDescription', value);
-            },
+          _animatedItem(
+            5,
+            TextFieldCard(
+              label: 'Description',
+              value: _description,
+              icon: Icons.description,
+              onSave: (value) {
+                setState(() => _description = value);
+                widget.onUpdate?.call('companyDescription', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Professional Summary',
-            value: _summary,
-            icon: Icons.summarize,
-            onSave: (value) {
-              setState(() => _summary = value);
-              widget.onUpdate?.call('description', value);
-            },
+          _animatedItem(
+            6,
+            TextFieldCard(
+              label: 'Professional Summary',
+              value: _summary,
+              icon: Icons.summarize,
+              onSave: (value) {
+                setState(() => _summary = value);
+                widget.onUpdate?.call('description', value);
+              },
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            keyboardType: TextInputType.emailAddress,
-            label: 'Company Email',
-            value: _companyEmail,
-            icon: Icons.email,
-            onSave: (value) {
-              setState(() => _companyEmail = value);
-              widget.onUpdate?.call('companyEmail', value);
-            },
-            validator: emailValidator,
+          _animatedItem(
+            7,
+            TextFieldCard(
+              keyboardType: TextInputType.emailAddress,
+              label: 'Company Email',
+              value: _companyEmail,
+              icon: Icons.email,
+              onSave: (value) {
+                setState(() => _companyEmail = value);
+                widget.onUpdate?.call('companyEmail', value);
+              },
+              validator: emailValidator,
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Location',
-            value: _location,
-            icon: Icons.location_city,
-            onSave: (value) {
-              setState(() => _location = value);
-              widget.onUpdate?.call('companyAddress', value);
-            },
+          _animatedItem(
+            8,
+            TextFieldCard(
+              label: 'Location',
+              value: _location,
+              icon: Icons.location_city,
+              onSave: (value) {
+                setState(() => _location = value);
+                widget.onUpdate?.call('companyAddress', value);
+              },
+            ),
           ),
           const SizedBox(height: 50),
         ],

@@ -146,7 +146,7 @@ class MediaDatasourceImpl implements MediaDatasource {
   try {
     print("Attempting to delete media with ID: $mediaId");
     final response = await dio.delete(
-      'https://api.qrfolio.net/api/gallery/$mediaId',
+      '$baseUrl/gallery/$mediaId',
       options: Options(
         headers: {
           "Authorization": "Bearer $token",

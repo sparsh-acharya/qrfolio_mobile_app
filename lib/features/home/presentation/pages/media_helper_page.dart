@@ -22,7 +22,7 @@ class _MediaHelperPageState extends State<MediaHelperPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<MediaState> _mediaState = [
+    final List<MediaState> mediaState = [
       LoadingMediaState(),
       AddingImageState(),
       ErrorAddingImageState(""),
@@ -82,8 +82,7 @@ class _MediaHelperPageState extends State<MediaHelperPage> {
               ),
             ),
           );
-        }
-        else if(state is AddedDocumentState) {
+        } else if (state is AddedDocumentState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -94,8 +93,7 @@ class _MediaHelperPageState extends State<MediaHelperPage> {
               ),
             ),
           );
-        }
-        else if(state is ErrorAddingDocumentState) {
+        } else if (state is ErrorAddingDocumentState) {
           print("Error adding document: ${state.message}");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -117,7 +115,8 @@ class _MediaHelperPageState extends State<MediaHelperPage> {
             state is AddingVideoState ||
             state is ErrorAddingVideoState ||
             state is AddingDocumentState ||
-            state is ErrorAddingDocumentState) {
+            state is ErrorAddingDocumentState ||
+            state is DeletingMediaState) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );

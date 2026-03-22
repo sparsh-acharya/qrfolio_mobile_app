@@ -1,1 +1,3 @@
-const String baseUrl = "https://api.qrfolio.net/api";
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+String get baseUrl => dotenv.env['API_BASE_URL']!;

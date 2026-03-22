@@ -7,21 +7,83 @@ import 'package:qr_folio/features/auth/presentation/bloc/auth_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 5;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.4).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.4).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _animController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.read<AuthBloc>().add(AuthReturnHomeEvent());
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
@@ -51,188 +113,218 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 50),
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
-                  ).createShader(bounds),
-                  child: Text(
-                    "QR Folio",
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
-                Text(
-                  "Sign in to \nyour Account",
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      "Don't have an account? ",
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(AuthRegisterPageEvent());
-                      },
-                      child: Text(
-                        "Sign Up",
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.primaryBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 50),
-                Text(
-                  "Email",
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textTertiary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Container(
-                  width: 300,
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardSecondaryBg,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: AppColors.cardSecondaryBorder,
-                      width: 1,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: widget._emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: const InputDecoration(border: InputBorder.none),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Password",
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textTertiary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Container(
-                  width: 300,
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardSecondaryBg,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: AppColors.cardSecondaryBorder,
-                      width: 1,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: widget._passwordController,
-                    keyboardType: TextInputType.visiblePassword,
-                    obscureText: _obscurePassword,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: AppColors.textTertiary,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: _rememberMe,
-                      onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
-                        setState(() {
-                          _rememberMe = value;
-                        });
-                      },
-                    ),
-                    Text(
-                      "Remember me",
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textTertiary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/forgot-password');
-                      },
-                      child: Text(
-                        "Forgot password?",
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textTertiary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 50),
-                Container(
-                  width: 300,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.blueAccent, width: 1),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                        AuthLoginEvent(
-                          email: "sparshacharya8644@gmail.com",
-                          password: "Zxcv@123",
-                          rememberMe: _rememberMe,
-                        ),
-                      );
-                    },
+                const SizedBox(height: 50),
+                _animatedItem(
+                  0,
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
+                    ).createShader(bounds),
                     child: Text(
-                      "Login",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      "QR Folio",
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                _animatedItem(
+                  1,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Sign in to \nyour Account",
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            "Don't have an account? ",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              context.read<AuthBloc>().add(AuthRegisterPageEvent());
+                            },
+                            child: Text(
+                              "Sign Up",
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.primaryBlue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 50),
+                _animatedItem(
+                  2,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Email",
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        width: 300,
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardSecondaryBg,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.cardSecondaryBorder,
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: widget._emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          decoration: const InputDecoration(border: InputBorder.none),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _animatedItem(
+                  3,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Password",
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Container(
+                        width: 300,
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardSecondaryBg,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.cardSecondaryBorder,
+                            width: 1,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: widget._passwordController,
+                          keyboardType: TextInputType.visiblePassword,
+                          obscureText: _obscurePassword,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.textTertiary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (value) {
+                              if (value == null) {
+                                return;
+                              }
+                              setState(() {
+                                _rememberMe = value;
+                              });
+                            },
+                          ),
+                          Text(
+                            "Remember me",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textTertiary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Spacer(),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/forgot-password');
+                            },
+                            child: Text(
+                              "Forgot password?",
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.textTertiary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 50),
+                _animatedItem(
+                  4,
+                  Container(
+                    width: 300,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.blueAccent, width: 1),
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        context.read<AuthBloc>().add(
+                          AuthLoginEvent(
+                            email: "sparshacharya8644@gmail.com",
+                            password: "Zxcv@123",
+                            rememberMe: _rememberMe,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Login",
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -242,6 +334,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }

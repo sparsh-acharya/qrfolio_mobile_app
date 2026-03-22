@@ -1,3 +1,6 @@
 {
-    "cmake.sourceDirectory": "D:/edihub/qr_folio/linux"
+    "cmake.sourceDirectory": "D:/edihub/qr_folio/linux",
+    "chat.tools.terminal.autoApprove": {
+        "flutter": true
+    }
 }

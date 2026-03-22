@@ -6,7 +6,7 @@ class VerifyEmailUsecase {
 
   VerifyEmailUsecase({required this.repo});
 
-  FutureEither<String> call({
+  FutureEither<List<String>> call({
     required String email,
     required String otp,
     required String password,

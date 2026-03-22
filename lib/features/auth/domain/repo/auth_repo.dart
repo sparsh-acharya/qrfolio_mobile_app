@@ -2,7 +2,12 @@ import 'package:qr_folio/core/utils/typedef.dart';
 import 'package:qr_folio/features/auth/domain/entity/auth_user_entity.dart';
 
 abstract class AuthRepo {
-  FutureEither<AuthUserEntity> login(String email, String password,bool rememberMe);
+  FutureEither<AuthUserEntity> login({
+    required String email,
+    required String password,
+    required bool rememberMe,
+    
+  });
   FutureVoid logout();
   FutureEither<String> signUp({
     required String name,
@@ -13,6 +18,9 @@ abstract class AuthRepo {
     String? couponCode,
   });
 
-  FutureEither<String> verifyEmail({required String email, required String otp, required String password});
-
+  FutureEither<List<String>> verifyEmail({
+    required String email,
+    required String otp,
+    required String password,
+  });
 }

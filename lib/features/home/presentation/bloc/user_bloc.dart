@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 import 'package:qr_folio/features/home/domain/usecase/get_user_usecase.dart';
 import 'package:qr_folio/features/home/domain/usecase/update_user_usecase.dart';
-import 'package:qr_folio/features/media/domain/usecase/get_media_usecase.dart';
 
 part 'user_event.dart';
 part 'user_state.dart';

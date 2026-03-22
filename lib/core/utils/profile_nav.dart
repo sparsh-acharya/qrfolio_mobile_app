@@ -9,8 +9,20 @@ void goTpProfile(
 }) {
   Navigator.push(
     context,
-    MaterialPageRoute(
-      builder: (context) => ProfilePage(user: user, initialIndex: initialIndex),
+    PageRouteBuilder(
+      opaque: false,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ProfilePage(user: user, initialIndex: initialIndex),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const curve = Curves.easeOutCubic;
+        var tween = Tween(begin: begin, end: Offset.zero).chain(CurveTween(curve: curve));
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
     ),
   );
 }

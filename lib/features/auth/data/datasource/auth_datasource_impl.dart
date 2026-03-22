@@ -12,15 +12,17 @@ class AuthDatasourceImpl implements AuthDatasource {
 
   AuthDatasourceImpl({required this.dio});
 
+
+
   @override
-  FutureEither<AuthUserModel> login(
-    String email,
-    String password,
-    bool rememberMe,
-  ) async {
+  FutureEither<AuthUserModel> login({
+    required String email,
+    required String password,
+    required bool rememberMe,
+  }) async {
     final res = await dio.post(
       '$baseUrl/auth/login',
-      data: {"email": email, "password": password, "rememberMe": rememberMe},
+      data: {"email": email, "password": password, "rememberMe": rememberMe,},
     );
 
     if (res.data['success'] != true) {
@@ -32,6 +34,7 @@ class AuthDatasourceImpl implements AuthDatasource {
     final String userEmail = res.data['user']['email'];
     final bool isVerified = res.data['user']['isVerified'] == true;
     final bool isPaid = res.data['user']['isPaid'] == true;
+
     if (rememberMe) {
       await AppStorage().saveId(res.data['user']['id']);
       await AppStorage().savePassword(password);
@@ -87,28 +90,29 @@ class AuthDatasourceImpl implements AuthDatasource {
     );
 
     if (res.data['success'] != true) {
-      return left(ApiError(message: res.data['message'] ?? 'failed to send otp'));
+      return left(
+        ApiError(message: res.data['message'] ?? 'failed to send otp'),
+      );
     }
     return right(res.data['message'] ?? 'Otp sent successfully');
   }
 
   @override
-  FutureEither<String> verifyEmail({
+  FutureEither<List<String>> verifyEmail({
     required String email,
     required String otp,
     required String password,
   }) async {
     final res = await dio.post(
       '$baseUrl/auth/verify-otp',
-      data: {
-        "email": email,
-        "otp": otp,
-      },
+      data: {"email": email, "otp": otp},
     );
 
     if (res.data['success'] != true) {
-      return left(ApiError(message: res.data['message'] ?? 'Verification Failed'));
+      return left(
+        ApiError(message: res.data['message'] ?? 'Verification Failed'),
+      );
     }
-    return right(password);
+    return right([password, res.data['user']['id']]);
   }
 }

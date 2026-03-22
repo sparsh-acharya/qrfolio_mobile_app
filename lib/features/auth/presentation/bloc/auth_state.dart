@@ -27,7 +27,8 @@ final class AuthEmailOtpSentState extends AuthRegisterPageState {
 }
 final class AuthEmailVerifiedState extends AuthRegisterPageState {
   final String password;
-  AuthEmailVerifiedState({required this.password});
+  final String userId;
+  AuthEmailVerifiedState({required this.password, required this.userId});
 }
 final class AuthEmailVeriFailedState extends AuthRegisterPageState {
   final String message;

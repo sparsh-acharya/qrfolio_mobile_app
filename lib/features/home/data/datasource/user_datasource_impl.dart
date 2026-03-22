@@ -1,7 +1,13 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg_provider/flutter_svg_provider.dart';
+import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:qr/qr.dart';
 import 'package:qr_folio/core/errors/failure.dart';
 import 'package:qr_folio/core/utils/app_storage.dart';
 import 'package:qr_folio/core/utils/constants.dart';
@@ -12,6 +18,44 @@ import 'package:qr_folio/features/home/data/model/user_data_model.dart';
 class UserDatasourceImpl implements UserDatasource {
   final Dio dio;
   UserDatasourceImpl({required this.dio});
+
+  PrettyQrDecoration kQrDecoration = const PrettyQrDecoration(
+  // image: PrettyQrDecorationImage(
+
+  //   image: Svg('assets/logo.svg'),
+  // ),
+  shape: PrettyQrShape.custom(
+    PrettyQrSquaresSymbol(color: Colors.black),
+  ),
+);
+
+
+  Future<String> _generateProfileQrBase64(String userId) async {
+    final trimmedUserId = userId.trim();
+    if (trimmedUserId.isEmpty) {
+      throw ArgumentError('userId cannot be empty');
+    }
+
+    final webBase = dotenv.env['WEB_BASE_URL']!;
+    final profileUrl = '$webBase/profile/$trimmedUserId';
+    final qrCode = QrCode.fromData(
+      data: profileUrl,
+      errorCorrectLevel: QrErrorCorrectLevel.H,
+    );
+
+    final qrImage = QrImage(qrCode);
+    final byteData = await qrImage.toImageAsBytes(
+      size: 512,
+      format: ui.ImageByteFormat.png,
+      decoration: kQrDecoration,
+    );
+
+    if (byteData == null) {
+      throw StateError('Failed to render QR image bytes');
+    }
+
+    return 'data:image/png;base64,${base64Encode(byteData.buffer.asUint8List())}';
+  }
 
   @override
   FutureEither<UserDataModel> getUserData() async {
@@ -33,6 +77,19 @@ class UserDatasourceImpl implements UserDatasource {
         result.data['email'] = userEmail;
         result.data['isVerified'] = isVerified;
         result.data['isPaid'] = isPaid;
+
+        result.data['qrCodeImage'] =
+            (result.data['qrCodeImage'] == null ||
+                result.data['qrCodeImage'].isEmpty)
+            ? await _generateProfileQrBase64(result.data['_id'])
+            : result.data['qrCodeImage'];
+
+        result.data['qrCodeUrl'] =
+            (result.data['qrCodeUrl'] == null ||
+                result.data['qrCodeUrl'].isEmpty)
+            ? '${dotenv.env['WEB_BASE_URL'] ?? 'https://www.qrfolio.net'}/profile/${result.data['_id']}'
+            : result.data['qrCodeUrl'];
+
 
         return right(UserDataModel.fromJson(result.data));
       } else {

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:qr_folio/core/utils/app_storage.dart';
 import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 
 class UserDataModel {

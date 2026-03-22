@@ -4,7 +4,6 @@ import 'package:qr_folio/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qr_folio/features/auth/presentation/pages/authpage.dart';
 import 'package:qr_folio/features/auth/presentation/pages/login.dart';
 import 'package:qr_folio/features/auth/presentation/pages/signup.dart';
-import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:qr_folio/features/home/presentation/pages/home_bloc_helper.dart';
 
 class AuthBlocHelper extends StatefulWidget {

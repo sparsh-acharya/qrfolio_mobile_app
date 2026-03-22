@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:qr_folio/features/home/presentation/pages/home.dart';
 import 'package:qr_folio/features/home/presentation/pages/media_helper_page.dart';
-import 'package:qr_folio/features/home/presentation/pages/qr_screen.dart';
+import 'package:qr_folio/features/qr/presentation/pages/qr_screen.dart';
 import 'package:qr_folio/features/auth/presentation/pages/settings.dart';
-import 'package:qr_folio/features/media/presentation/pages/media_page.dart';
 import 'package:qr_folio/features/home/presentation/pages/professional_detail_page.dart';
-import 'package:qr_folio/features/home/presentation/pages/profile.dart';
 
 class HomeBlocHelper extends StatefulWidget {
   const HomeBlocHelper({super.key});
@@ -76,8 +73,8 @@ class _HomeBlocHelperState extends State<HomeBlocHelper> {
               children: [
                 Home(userData: state.user),
                 ProfessionalDetailPage(user: state.user),
-                MediaHelperPage(user: state.user),
                 QrScreen(userData: state.user),
+                MediaHelperPage(user: state.user),
                 SettingsPage(userData: state.user),
               ],
             ),

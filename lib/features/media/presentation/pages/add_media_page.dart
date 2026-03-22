@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
+import 'package:qr_folio/core/widgets/animated_tab_body.dart';
 import 'package:qr_folio/core/widgets/appbar.dart';
 import 'package:qr_folio/core/widgets/textfieldcard.dart';
 import 'package:qr_folio/core/widgets/wallpaper.dart';
@@ -17,7 +18,8 @@ class AddMediaPage extends StatefulWidget {
   State<AddMediaPage> createState() => _AddMediaPageState();
 }
 
-class _AddMediaPageState extends State<AddMediaPage> {
+class _AddMediaPageState extends State<AddMediaPage>
+    with SingleTickerProviderStateMixin {
   final ImagePicker _imagePicker = ImagePicker();
   XFile? _selectedImage;
   String? _imageError;
@@ -34,6 +36,61 @@ class _AddMediaPageState extends State<AddMediaPage> {
   bool _isPickingDocument = false;
   String _documentTitle = "";
   String _documentDescription = "";
+
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.5).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.5).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
+  }
 
   Future<void> _pickImage() async {
     if (_isPickingImage) {
@@ -195,7 +252,10 @@ class _AddMediaPageState extends State<AddMediaPage> {
                     padding: const EdgeInsets.only(left: 20, right: 20),
                     child: Column(
                       children: [
-                        Column(
+                        // 0 – Header
+                        _animatedItem(
+                          0,
+                          Column(
                           children: [
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -233,10 +293,14 @@ class _AddMediaPageState extends State<AddMediaPage> {
                             ),
                           ],
                         ),
+                        ),
 
                         const SizedBox(height: 20),
 
-                        TabBar(
+                        // 1 – Tab bar
+                        _animatedItem(
+                          1,
+                          TabBar(
                           indicatorSize: TabBarIndicatorSize.tab,
                           overlayColor: WidgetStateProperty.all(
                             Colors.transparent,
@@ -297,23 +361,28 @@ class _AddMediaPageState extends State<AddMediaPage> {
                               ),
                             ),
                           ],
+                          ),
                         ),
 
                         const SizedBox(height: 20),
 
                         /// ✅ ONLY THIS SCROLLS
+                        // 2 – Tab content
                         Expanded(
-                          child: TabBarView(
+                          child: _animatedItem(
+                            2,
+                            TabBarView(
                             children: [
                               /// TAB 1
-                              _uploadImageTab(),
+                              AnimatedTabBody(child: _uploadImageTab()),
 
                               /// TAB 2
-                              _uploadVideoTab(),
+                              AnimatedTabBody(child: _uploadVideoTab()),
 
                               /// TAB 3
-                              _uploadDocumentTab(),
+                              AnimatedTabBody(child: _uploadDocumentTab()),
                             ],
+                            ),
                           ),
                         ),
                       ],

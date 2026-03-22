@@ -8,12 +8,17 @@ class AuthRepoImpl implements AuthRepo {
   final AuthDatasource datasource;
   AuthRepoImpl({required this.datasource});
   @override
-  FutureEither<AuthUserEntity> login(
-    String email,
-    String password,
-    bool rememberMe,
-  ) async {
-    final result = await datasource.login(email, password, rememberMe);
+  FutureEither<AuthUserEntity> login({
+    required String email,
+    required String password,
+    required bool rememberMe,
+    
+  }) async {
+    final result = await datasource.login(
+      email: email,
+      password: password,
+      rememberMe: rememberMe,
+    );
     return result.fold((failure) => left(failure), (userModel) {
       print('-----------model-------------');
       print(userModel.toString());
@@ -48,7 +53,7 @@ class AuthRepoImpl implements AuthRepo {
   }
 
   @override
-  FutureEither<String> verifyEmail({
+  FutureEither<List<String>> verifyEmail({
     required String email,
     required String otp,
     required String password,

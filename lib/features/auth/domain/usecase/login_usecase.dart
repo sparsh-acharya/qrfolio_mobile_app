@@ -7,11 +7,12 @@ class LoginUsecase {
 
   LoginUsecase({required this.repo});
 
-  FutureEither<AuthUserEntity> call(
-    String email,
-    String password,
-    bool rememberMe,
-  ) {
-    return repo.login(email, password,rememberMe);
+  FutureEither<AuthUserEntity> call({
+    required String email,
+    required String password,
+    required bool rememberMe,
+    
+  }) {
+    return repo.login(email: email, password: password, rememberMe: rememberMe);
   }
 }

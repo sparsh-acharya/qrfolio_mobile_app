@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_folio/core/widgets/animated_tab_body.dart';
+import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:qr_folio/features/media/presentation/bloc/media_bloc.dart';
 import 'package:qr_folio/features/media/presentation/pages/add_media_page.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,8 +21,14 @@ class MediaPage extends StatefulWidget {
   State<MediaPage> createState() => _MediaPageState();
 }
 
-class _MediaPageState extends State<MediaPage> {
-  final int _currentIndex = 2;
+class _MediaPageState extends State<MediaPage>
+    with SingleTickerProviderStateMixin {
+  final int _currentIndex = 3;
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 3;
 
   // Separate media into different lists
   List<MediaEntity> get imageList => widget.mediaList
@@ -36,196 +44,293 @@ class _MediaPageState extends State<MediaPage> {
       .toList();
 
   @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.5).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.5).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Stack(
-        children: [
-          const Wallpaper(),
+    return BlocListener<UserBloc, UserState>(
+      listener: (context, state) {
+        if (state is NavItemSelectedState && state.index == 3) {
+          _animController.reset();
+          _animController.forward();
+        }
+      },
+      child: DefaultTabController(
+        length: 3,
+        child: Stack(
+          children: [
+            const Wallpaper(),
 
-          Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: PreferredSize(
-              preferredSize: const Size.fromHeight(90),
-              child: Appbar(user: widget.user),
-            ),
+            Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(90),
+                child: Appbar(user: widget.user),
+              ),
 
-            body: SafeArea(
-              top: false,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 20,
-                      right: 20,
-                      bottom: 120,
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+              body: SafeArea(
+                top: false,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        bottom: 120,
+                      ),
+                      child: Column(
+                        children: [
+                          // 0 – Header row
+                          _animatedItem(
+                            0,
+                            Row(
                               children: [
-                                Text(
-                                  "Gallery",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: -1,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Gallery",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: -1,
+                                          ),
+                                    ),
+                                    Text(
+                                      "0/50 Images • 1/30 Video links",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 10,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                                const Spacer(),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        opaque: false,
+                                        transitionDuration: const Duration(milliseconds: 300),
+                                        pageBuilder: (context, animation, secondaryAnimation) =>
+                                            AddMediaPage(user: widget.user),
+                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                          const begin = Offset(0.0, 1.0);
+                                          const curve = Curves.easeOutCubic;
+                                          var tween = Tween(begin: begin, end: Offset.zero).chain(CurveTween(curve: curve));
+                                          return SlideTransition(
+                                            position: animation.drive(tween),
+                                            child: child,
+                                          );
+                                        },
                                       ),
-                                ),
-                                Text(
-                                  "0/50 Images • 1/30 Video links",
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 10,
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 120,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryBlue,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Add Media",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        AddMediaPage(user: widget.user),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                width: 120,
-                                height: 45,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    "Add Media",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // 1 – Tab bar
+                          _animatedItem(
+                            1,
+                            TabBar(
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              overlayColor: WidgetStateProperty.all(
+                                Colors.transparent,
                               ),
+                              indicatorAnimation: TabIndicatorAnimation.elastic,
+                              indicator: BoxDecoration(
+                                color: AppColors.cardSecondaryBg,
+                                border: Border.all(
+                                  color: AppColors.cardSecondaryBorder,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              labelColor: Colors.white,
+                              unselectedLabelColor: AppColors.textPrimary,
+                              dividerColor: Colors.transparent,
+                              tabs: [
+                                Tab(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.image_outlined, size: 17),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Images",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Tab(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.video_collection_outlined,
+                                        size: 17,
+                                      ),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Videos",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Tab(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.document_scanner, size: 17),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "Docs",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        TabBar(
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          overlayColor: WidgetStateProperty.all(
-                            Colors.transparent,
                           ),
-                          indicatorAnimation: TabIndicatorAnimation.elastic,
-                          indicator: BoxDecoration(
-                            color: AppColors.cardSecondaryBg,
-                            border: Border.all(
-                              color: AppColors.cardSecondaryBorder,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          labelColor: Colors.white,
-                          unselectedLabelColor: AppColors.textPrimary,
-                          dividerColor: Colors.transparent,
-                          tabs: [
-                            Tab(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+
+                          const SizedBox(height: 20),
+
+                          /// ✅ ONLY THIS SCROLLS
+                          // 2 – Tab content
+                          Expanded(
+                            child: _animatedItem(
+                              2,
+                              TabBarView(
                                 children: [
-                                  Icon(Icons.image_outlined, size: 17),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "Images",
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
+                                  /// TAB 1
+                                  AnimatedTabBody(
+                                    child: ImageTab(mediaList: imageList),
+                                  ),
+
+                                  /// TAB 2
+                                  AnimatedTabBody(
+                                    child: VideoTab(mediaList: videoList),
+                                  ),
+
+                                  AnimatedTabBody(
+                                    child: DocTab(mediaList: docList),
                                   ),
                                 ],
                               ),
                             ),
-                            Tab(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.video_collection_outlined,
-                                    size: 17,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "Videos",
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Tab(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.document_scanner, size: 17),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "Docs",
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        /// ✅ ONLY THIS SCROLLS
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              /// TAB 1
-                              ImageTab(mediaList: imageList),
-
-                              /// TAB 2
-                              VideoTab(mediaList: videoList),
-
-                              DocTab(mediaList: docList),
-                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  Navbar(currentIndex: _currentIndex),
-                ],
+                    Navbar(currentIndex: _currentIndex),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

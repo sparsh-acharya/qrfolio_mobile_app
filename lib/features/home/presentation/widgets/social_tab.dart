@@ -27,7 +27,8 @@ class SocialTab extends StatefulWidget {
   State<SocialTab> createState() => _SocialTabState();
 }
 
-class _SocialTabState extends State<SocialTab> {
+class _SocialTabState extends State<SocialTab>
+    with SingleTickerProviderStateMixin {
   late String _twitter;
   late String _linkedin;
   late String _instagram;
@@ -35,6 +36,12 @@ class _SocialTabState extends State<SocialTab> {
   late String _github;
   late String _whatsapp;
   late String _website;
+
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 8;
 
   @override
   void initState() {
@@ -46,7 +53,53 @@ class _SocialTabState extends State<SocialTab> {
     _github = widget.github;
     _whatsapp = widget.whatsapp;
     _website = widget.website;
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.08;
+      final end = (start + 0.35).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.08;
+      final end = (start + 0.35).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animController.forward();
+    });
   }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -54,85 +107,107 @@ class _SocialTabState extends State<SocialTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: 20),
-
-          Text(
-            'Social Links',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          _animatedItem(
+            0,
+            Text(
+              'Social Links',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
           const SizedBox(height: 20),
-          TextFieldCard(
-            label: 'Twitter',
-            value: _twitter,
-            icon: Icons.alternate_email,
-            onSave: (value) => setState(() {
-              _twitter = value;
-              widget.onUpdate?.call('twitter', value);
-            }),
+          _animatedItem(
+            1,
+            TextFieldCard(
+              label: 'Twitter',
+              value: _twitter,
+              icon: Icons.alternate_email,
+              onSave: (value) => setState(() {
+                _twitter = value;
+                widget.onUpdate?.call('twitter', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'LinkedIn',
-            value: _linkedin,
-            icon: Icons.work,
-            onSave: (value) => setState(() {
-              _linkedin = value;
-              widget.onUpdate?.call('linkedin', value);
-            }),
+          _animatedItem(
+            2,
+            TextFieldCard(
+              label: 'LinkedIn',
+              value: _linkedin,
+              icon: Icons.work,
+              onSave: (value) => setState(() {
+                _linkedin = value;
+                widget.onUpdate?.call('linkedin', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Instagram',
-            value: _instagram,
-            icon: Icons.photo_camera,
-            onSave: (value) => setState(() {
-              _instagram = value;
-              widget.onUpdate?.call('instagram', value);
-            }),
+          _animatedItem(
+            3,
+            TextFieldCard(
+              label: 'Instagram',
+              value: _instagram,
+              icon: Icons.photo_camera,
+              onSave: (value) => setState(() {
+                _instagram = value;
+                widget.onUpdate?.call('instagram', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Facebook',
-            value: _facebook,
-            icon: Icons.facebook,
-            onSave: (value) => setState(() {
-              _facebook = value;
-              widget.onUpdate?.call('facebook', value);
-            }),
+          _animatedItem(
+            4,
+            TextFieldCard(
+              label: 'Facebook',
+              value: _facebook,
+              icon: Icons.facebook,
+              onSave: (value) => setState(() {
+                _facebook = value;
+                widget.onUpdate?.call('facebook', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Github',
-            value: _github,
-            icon: Icons.code,
-            onSave: (value) => setState(() {
-              _github = value;
-              widget.onUpdate?.call('github', value);
-            }),
+          _animatedItem(
+            5,
+            TextFieldCard(
+              label: 'Github',
+              value: _github,
+              icon: Icons.code,
+              onSave: (value) => setState(() {
+                _github = value;
+                widget.onUpdate?.call('github', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Whatsapp',
-            value: _whatsapp,
-            icon: Icons.chat,
-            onSave: (value) => setState(() {
-              _whatsapp = value;
-              widget.onUpdate?.call('whatsapp', value);
-            }),
-            
+          _animatedItem(
+            6,
+            TextFieldCard(
+              label: 'Whatsapp',
+              value: _whatsapp,
+              icon: Icons.chat,
+              onSave: (value) => setState(() {
+                _whatsapp = value;
+                widget.onUpdate?.call('whatsapp', value);
+              }),
+            ),
           ),
           const SizedBox(height: 12),
-          TextFieldCard(
-            label: 'Personal Website',
-            value: _website,
-            icon: Icons.language,
-            onSave: (value) => setState(() {
-              _website = value;
-              widget.onUpdate?.call('website', value);
-            }),
+          _animatedItem(
+            7,
+            TextFieldCard(
+              label: 'Personal Website',
+              value: _website,
+              icon: Icons.language,
+              onSave: (value) => setState(() {
+                _website = value;
+                widget.onUpdate?.call('website', value);
+              }),
+            ),
           ),
           const SizedBox(height: 50),
         ],

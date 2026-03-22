@@ -10,18 +10,12 @@ import 'package:qr_folio/features/auth/domain/usecase/logout_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/signup_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/verify_email_usecase.dart';
 import 'package:qr_folio/features/auth/presentation/pages/auth_bloc_helper.dart';
-import 'package:qr_folio/features/auth/presentation/pages/authpage.dart';
-import 'package:qr_folio/features/auth/presentation/pages/login.dart';
 import 'package:qr_folio/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:qr_folio/features/home/data/datasource/user_datasource_impl.dart';
 import 'package:qr_folio/features/home/data/repo/user_data_repo_impl.dart';
 import 'package:qr_folio/features/home/domain/usecase/get_user_usecase.dart';
 import 'package:qr_folio/features/home/domain/usecase/update_user_usecase.dart';
 import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
-import 'package:qr_folio/features/home/presentation/pages/home.dart';
-import 'package:qr_folio/features/home/presentation/pages/home_bloc_helper.dart';
-import 'package:qr_folio/features/home/presentation/pages/professional_detail_page.dart';
-import 'package:qr_folio/features/home/presentation/pages/profile.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_folio/features/media/data/datasource/media_datasource_impl.dart';
 import 'package:qr_folio/features/media/data/repo/media_repo_impl.dart';
@@ -31,9 +25,19 @@ import 'package:qr_folio/features/media/domain/usecase/add_document_usecase.dart
 import 'package:qr_folio/features/media/domain/usecase/delete_media_usecase.dart';
 import 'package:qr_folio/features/media/domain/usecase/get_media_usecase.dart';
 import 'package:qr_folio/features/media/presentation/bloc/media_bloc.dart';
+import 'package:qr_folio/features/qr/data/datasource/qr_datasource_impl.dart';
+import 'package:qr_folio/features/qr/data/repo/qr_repo_impl.dart';
+import 'package:qr_folio/features/qr/domain/usecase/copy_qr_link_usecase.dart';
+import 'package:qr_folio/features/qr/domain/usecase/export_qr_png_usecase.dart';
+import 'package:qr_folio/features/qr/domain/usecase/export_qr_svg_usecase.dart';
+import 'package:qr_folio/features/qr/domain/usecase/share_qr_usecase.dart';
+import 'package:qr_folio/features/qr/presentation/bloc/qr_bloc.dart';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
@@ -106,6 +110,17 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
+        ),
+        BlocProvider<QrBloc>(
+          create: (context) {
+            final qrRepo = QrRepoImpl(qrDatasource: QrDatasourceImpl());
+            return QrBloc(
+              exportQrPngUsecase: ExportQrPngUsecase(qrRepo: qrRepo),
+              exportQrSvgUsecase: ExportQrSvgUsecase(qrRepo: qrRepo),
+              copyQrLinkUsecase: CopyQrLinkUsecase(qrRepo: qrRepo),
+              shareQrUsecase: ShareQrUsecase(qrRepo: qrRepo),
+            );
+          },
         ),
       ],
       child: MaterialApp(

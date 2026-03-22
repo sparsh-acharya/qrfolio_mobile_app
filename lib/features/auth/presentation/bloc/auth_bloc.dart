@@ -24,7 +24,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.signupUsecase,
     required this.verifyEmailUsecase,
   }) : super(AuthInitialState()) {
-
     on<AuthLoginEvent>(_onlogin);
     on<AuthLogoutEvent>(_onlogout);
     on<AuthCheckEvent>(_oncheck);
@@ -36,14 +35,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterPageEvent>((event, emit) {
       emit(AuthRegisterPageState());
     });
+    on<AuthReturnHomeEvent>((event, emit) {
+      emit(UnauthenticatedState());
+    });
   }
 
   FutureOr<void> _onlogin(AuthLoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoadingState());
     final result = await loginUsecase(
-      event.email,
-      event.password,
-      event.rememberMe,
+      email: event.email,
+      password: event.password,
+      rememberMe: event.rememberMe,
     );
 
     result.fold(
@@ -83,7 +85,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  FutureOr<void> _onsignup(AuthSignUpEvent event, Emitter<AuthState> emit) async{
+  FutureOr<void> _onsignup(
+    AuthSignUpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthSignupLoadingState());
     final result = await signupUsecase(
       name: event.name,
@@ -97,10 +102,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthSendingOtpErrorState(message: failure.message)),
       (msg) => emit(AuthEmailOtpSentState(message: msg)),
     );
-
   }
 
-  FutureOr<void> _onverifyemail(AuthVerifyEmailEvent event, Emitter<AuthState> emit) async  {
+  FutureOr<void> _onverifyemail(
+    AuthVerifyEmailEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthSignupLoadingState());
     final result = await verifyEmailUsecase(
       email: event.email,
@@ -109,7 +116,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthEmailVeriFailedState(message: failure.message)),
-      (password) => emit(AuthEmailVerifiedState(password: password)),
+      (list) =>
+          emit(AuthEmailVerifiedState(password: list[0], userId: list[1])),
     );
   }
 }

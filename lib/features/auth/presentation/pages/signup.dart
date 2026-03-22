@@ -11,9 +11,52 @@ class SignupPage extends StatefulWidget {
   State<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateMixin {
   int _currentStep = 0;
   late String pass;
+
+  late final AnimationController _animController;
+  late final List<Animation<double>> _fadeAnims;
+  late final List<Animation<Offset>> _slideAnims;
+
+  static const _itemCount = 3;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.45).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _animController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnims = List.generate(_itemCount, (i) {
+      final start = i * 0.15;
+      final end = (start + 0.45).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0, 0.08),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _animController.forward();
+    });
+  }
 
   // Step 1 controllers
   final TextEditingController _fullNameController = TextEditingController();
@@ -37,6 +80,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   void dispose() {
+    _animController.dispose();
     _fullNameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -45,6 +89,13 @@ class _SignupPageState extends State<SignupPage> {
     _otpController.dispose();
     _couponController.dispose();
     super.dispose();
+  }
+
+  Widget _animatedItem(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnims[index],
+      child: SlideTransition(position: _slideAnims[index], child: child),
+    );
   }
 
   Widget _buildTextField({
@@ -556,8 +607,14 @@ class _SignupPageState extends State<SignupPage> {
         }
       },
 
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          context.read<AuthBloc>().add(AuthReturnHomeEvent());
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: true,
         backgroundColor: Colors.transparent,
         body: Stack(
           children: [
@@ -590,114 +647,128 @@ class _SignupPageState extends State<SignupPage> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 15),
-                        ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
-                            colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
-                          ).createShader(bounds),
-                          child: Text(
-                            "QR Folio",
-                            style: Theme.of(context).textTheme.displaySmall
-                                ?.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "Create your\nAccount",
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              "Already have an account? ",
-                              style: Theme.of(context).textTheme.bodySmall
+                        const SizedBox(height: 15),
+                        _animatedItem(
+                          0,
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
+                            ).createShader(bounds),
+                            child: Text(
+                              "QR Folio",
+                              style: Theme.of(context).textTheme.displaySmall
                                   ?.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                context.read<AuthBloc>().add(
-                                  AuthLoginPageEvent(),
-                                );
-                              },
-                              child: Text(
-                                "Sign In",
-                                style: Theme.of(context).textTheme.bodySmall
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _animatedItem(
+                          1,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Create your\nAccount",
+                                style: Theme.of(context).textTheme.displaySmall
                                     ?.copyWith(
-                                      color: AppColors.primaryBlue,
+                                      color: AppColors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                     ),
                               ),
-                            ),
-                          ],
+                              Row(
+                                children: [
+                                  Text(
+                                    "Already have an account? ",
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      context.read<AuthBloc>().add(
+                                        AuthLoginPageEvent(),
+                                      );
+                                    },
+                                    child: Text(
+                                      "Sign In",
+                                      style: Theme.of(context).textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: AppColors.primaryBlue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    child: Theme(
-                      data: ThemeData(
-                        colorScheme: ColorScheme.dark(
-                          primary: AppColors.primaryBlue,
+                    child: _animatedItem(
+                      2,
+                      Theme(
+                        data: ThemeData(
+                          colorScheme: ColorScheme.dark(
+                            primary: AppColors.primaryBlue,
+                          ),
+                          canvasColor: Colors.transparent,
                         ),
-                        canvasColor: Colors.transparent,
-                      ),
-                      child: Stepper(
-                        type: StepperType.vertical,
-                        currentStep: _currentStep,
-                        onStepContinue: _onStepContinue,
-                        onStepCancel: _onStepCancel,
-                        controlsBuilder: (context, details) {
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: _buildPrimaryButton(
-                                  text: _currentStep == 2
-                                      ? 'Sign Up'
-                                      : 'Continue',
-                                  onPressed: details.onStepContinue!,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Container(
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: AppColors.cardSecondaryBorder,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: TextButton(
-                                    onPressed: details.onStepCancel,
-                                    child: Text(
-                                      _currentStep == 0 ? 'Back' : 'Previous',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: AppColors.textPrimary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
+                        child: Stepper(
+                          type: StepperType.vertical,
+                          currentStep: _currentStep,
+                          onStepContinue: _onStepContinue,
+                          onStepCancel: _onStepCancel,
+                          controlsBuilder: (context, details) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: _buildPrimaryButton(
+                                    text: _currentStep == 2
+                                        ? 'Sign Up'
+                                        : 'Continue',
+                                    onPressed: details.onStepContinue!,
                                   ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                        steps: _buildSteps(),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: AppColors.cardSecondaryBorder,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: TextButton(
+                                      onPressed: details.onStepCancel,
+                                      child: Text(
+                                        _currentStep == 0 ? 'Back' : 'Previous',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: AppColors.textPrimary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                          steps: _buildSteps(),
+                        ),
                       ),
                     ),
                   ),
@@ -707,6 +778,7 @@ class _SignupPageState extends State<SignupPage> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

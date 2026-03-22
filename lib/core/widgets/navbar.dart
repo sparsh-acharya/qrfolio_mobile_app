@@ -43,8 +43,8 @@ class _NavbarState extends State<Navbar> {
               children: [
                 _buildNavItem(Icons.home, 0),
                 _buildNavItem(Icons.apartment, 1),
-                _buildNavItem(Icons.perm_media_outlined, 2),
-                _buildNavItem(Icons.qr_code, 3),
+                _buildNavItem(Icons.qr_code, 2),
+                _buildNavItem(Icons.perm_media_outlined, 3),
                 _buildNavItem(Icons.settings, 4),
               ],
             ),

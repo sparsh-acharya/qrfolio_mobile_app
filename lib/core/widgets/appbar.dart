@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 import 'package:qr_folio/core/utils/profile_nav.dart';
 import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
-import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
-import 'package:qr_folio/features/home/presentation/pages/profile.dart';
 
 class Appbar extends StatelessWidget {
   final UserDataEntity user;
