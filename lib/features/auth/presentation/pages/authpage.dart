@@ -12,7 +12,8 @@ class Authpage extends StatefulWidget {
   State<Authpage> createState() => _AuthpageState();
 }
 
-class _AuthpageState extends State<Authpage> with SingleTickerProviderStateMixin {
+class _AuthpageState extends State<Authpage>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _animController;
   late final List<Animation<double>> _fadeAnims;
   late final List<Animation<Offset>> _slideAnims;
@@ -71,153 +72,178 @@ class _AuthpageState extends State<Authpage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Wallpaper(),
-        Positioned(
-          right: -80,
-          top: -80,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withAlpha(50),
-                  blurRadius: 150,
-                  offset: const Offset(0, 0),
-                ),
-              ],
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          const Wallpaper(),
+          Positioned(
+            right: -80,
+            top: -80,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.transparent,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withAlpha(50),
+                    blurRadius: 150,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _animatedItem(
-                0,
-                SvgPicture.asset(
-                  'assets/logo.svg',
-                  width: 170,
-                  height: 170,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 50),
-              _animatedItem(
-                1,
-                Text(
-                  "Turn your profile into a",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center, // important
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 26,
-                    color: Colors.white,
-                    letterSpacing: -1,
-                    wordSpacing: 3,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              _animatedItem(
-                2,
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
-                  ).createShader(bounds),
-                  child: Text(
-                    "scannable QR identity",
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center, // important
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontSize: 26,
-
-                      color: Colors.white,
-                      letterSpacing: -1,
-                      wordSpacing: 3,
-                      fontWeight: FontWeight.w900,
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _animatedItem(
-                3,
-                Text(
-                  "Share a single smart QR instead of dozens of links.\nPerfect for creators, professionals, and brands.",
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center, // important
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.withAlpha(100),
-                    letterSpacing: -1,
-                    wordSpacing: 1,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 50),
-              _animatedItem(
-                4,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 145,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blueAccent, width: 1),
-                      ),
-                      child: TextButton(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(AuthLoginPageEvent());
-                        },
-                        child: Text(
-                          "Login",
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _animatedItem(
+                          0,
+                          SvgPicture.asset(
+                            'assets/logo.svg',
+                            width: 170,
+                            height: 170,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Container(
-                      width: 145,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBlue,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blueAccent, width: 1),
-                      ),
-                      child: TextButton(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(AuthRegisterPageEvent());
-                        },
-                        child: Text(
-                          "Register",
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 50),
+                        _animatedItem(
+                          1,
+                          Text(
+                            "Turn your profile into a",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center, // important
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontSize: 26,
+                                  color: Colors.white,
+                                  letterSpacing: -1,
+                                  wordSpacing: 3,
+                                  fontWeight: FontWeight.w900,
+                                ),
                           ),
                         ),
-                      ),
+                        _animatedItem(
+                          2,
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
+                            ).createShader(bounds),
+                            child: Text(
+                              "scannable QR identity",
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center, // important
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontSize: 26,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                    wordSpacing: 3,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _animatedItem(
+                          3,
+                          Text(
+                            "Share a single smart QR instead of dozens of links.\nPerfect for creators, professionals, and brands.",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center, // important
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey.withAlpha(100),
+                                  letterSpacing: -1,
+                                  wordSpacing: 1,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(height: 50),
+                        _animatedItem(
+                          4,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.blueAccent,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      context.read<AuthBloc>().add(AuthLoginPageEvent());
+                                    },
+                                    child: Text(
+                                      "Login",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryBlue,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.blueAccent,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: TextButton(
+                                    onPressed: () {
+                                      context.read<AuthBloc>().add(
+                                            AuthRegisterPageEvent(),
+                                          );
+                                    },
+                                    child: Text(
+                                      "Register",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

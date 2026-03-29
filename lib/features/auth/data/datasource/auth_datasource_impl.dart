@@ -20,35 +20,43 @@ class AuthDatasourceImpl implements AuthDatasource {
     required String password,
     required bool rememberMe,
   }) async {
-    final res = await dio.post(
-      '$baseUrl/auth/login',
-      data: {"email": email, "password": password, "rememberMe": rememberMe,},
-    );
+    try {
+      final res = await dio.post(
+        '$baseUrl/auth/login',
+        data: {
+          "email": email,
+          "password": password,
+          "rememberMe": rememberMe,
+        },
+      );
 
-    if (res.data['success'] != true) {
-      return left(ApiError(message: res.data['message'] ?? 'Login failed'));
+      if (res.data['success'] != true) {
+        return left(ApiError(message: res.data['message'] ?? 'Login failed'));
+      }
+
+      final String token = res.data['token'];
+      final String userName = res.data['user']['name'];
+      final String userEmail = res.data['user']['email'];
+      final bool isVerified = res.data['user']['isVerified'] == true;
+      final bool isPaid = res.data['user']['isPaid'] == true;
+
+      if (rememberMe) {
+        await AppStorage().saveId(res.data['user']['id']);
+        await AppStorage().savePassword(password);
+      } else {
+        await AppStorage().clearId();
+        await AppStorage().clearPassword();
+      }
+      await AppStorage().saveToken(token);
+      await AppStorage().saveName(userName);
+      await AppStorage().saveEmail(userEmail);
+      await AppStorage().saveIsVerified(isVerified);
+      await AppStorage().saveIsPaid(isPaid);
+
+      return right(AuthUserModel.fromJson(res.data));
+    } catch (e) {
+      return left(_handleError(e));
     }
-
-    final String token = res.data['token'];
-    final String userName = res.data['user']['name'];
-    final String userEmail = res.data['user']['email'];
-    final bool isVerified = res.data['user']['isVerified'] == true;
-    final bool isPaid = res.data['user']['isPaid'] == true;
-
-    if (rememberMe) {
-      await AppStorage().saveId(res.data['user']['id']);
-      await AppStorage().savePassword(password);
-    } else {
-      await AppStorage().clearId();
-      await AppStorage().clearPassword();
-    }
-    await AppStorage().saveToken(token);
-    await AppStorage().saveName(userName);
-    await AppStorage().saveEmail(userEmail);
-    await AppStorage().saveIsVerified(isVerified);
-    await AppStorage().saveIsPaid(isPaid);
-
-    return right(AuthUserModel.fromJson(res.data));
   }
 
   @override
@@ -64,7 +72,7 @@ class AuthDatasourceImpl implements AuthDatasource {
 
       return right(null);
     } catch (e) {
-      return left(ApiError(message: 'Logout failed: $e'));
+      return left(_handleError(e));
     }
   }
 
@@ -77,24 +85,28 @@ class AuthDatasourceImpl implements AuthDatasource {
     required String phone,
     String? couponCode,
   }) async {
-    final res = await dio.post(
-      '$baseUrl/auth/signup',
-      data: {
-        "name": name,
-        "password": password,
-        "confirmPassword": confirmPassword,
-        "email": email,
-        "phone": phone,
-        if (couponCode != null) "couponCode": couponCode,
-      },
-    );
-
-    if (res.data['success'] != true) {
-      return left(
-        ApiError(message: res.data['message'] ?? 'failed to send otp'),
+    try {
+      final res = await dio.post(
+        '$baseUrl/auth/signup',
+        data: {
+          "name": name,
+          "password": password,
+          "confirmPassword": confirmPassword,
+          "email": email,
+          "phone": phone,
+          if (couponCode != null) "couponCode": couponCode,
+        },
       );
+
+      if (res.data['success'] != true) {
+        return left(
+          ApiError(message: res.data['message'] ?? 'Signup failed'),
+        );
+      }
+      return right(res.data['message'] ?? 'OTP sent successfully');
+    } catch (e) {
+      return left(_handleError(e));
     }
-    return right(res.data['message'] ?? 'Otp sent successfully');
   }
 
   @override
@@ -103,16 +115,72 @@ class AuthDatasourceImpl implements AuthDatasource {
     required String otp,
     required String password,
   }) async {
-    final res = await dio.post(
-      '$baseUrl/auth/verify-otp',
-      data: {"email": email, "otp": otp},
-    );
-
-    if (res.data['success'] != true) {
-      return left(
-        ApiError(message: res.data['message'] ?? 'Verification Failed'),
+    try {
+      final res = await dio.post(
+        '$baseUrl/auth/verify-otp',
+        data: {"email": email, "otp": otp},
       );
+
+      if (res.data['success'] != true) {
+        return left(
+          ApiError(message: res.data['message'] ?? 'Verification failed'),
+        );
+      }
+      return right([password, res.data['user']['id']]);
+    } catch (e) {
+      return left(_handleError(e));
     }
-    return right([password, res.data['user']['id']]);
+  }
+
+  @override
+  FutureEither<String> forgotPassword({required String email}) async {
+    try {
+      final res = await dio.post(
+        '$baseUrl/auth/forgot-password',
+        data: {"email": email},
+      );
+
+      if (res.data['success'] != true) {
+        return left(
+          ApiError(message: res.data['message'] ?? 'Failed to send OTP'),
+        );
+      }
+      return right(res.data['message'] ?? 'OTP sent successfully');
+    } catch (e) {
+      return left(_handleError(e));
+    }
+  }
+
+  @override
+  FutureEither<String> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await dio.post(
+        '$baseUrl/auth/reset-password',
+        data: {"email": email, "otp": otp, "newPassword": newPassword},
+      );
+
+      if (res.data['success'] != true) {
+        return left(
+          ApiError(message: res.data['message'] ?? 'Reset password failed'),
+        );
+      }
+      return right(res.data['message'] ?? 'Password reset successfully');
+    } catch (e) {
+      return left(_handleError(e));
+    }
+  }
+
+  Failure _handleError(dynamic e) {
+    if (e is DioException) {
+      final String message = e.response?.data['message'] ?? 
+                             e.response?.data['msg'] ??
+                             e.message ?? 'An unexpected network error occurred';
+      return ApiError(message: message);
+    }
+    return ApiError(message: 'Something went wrong: ${e.toString()}');
   }
 }

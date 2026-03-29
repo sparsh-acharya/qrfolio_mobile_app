@@ -34,3 +34,30 @@ final class AuthEmailVeriFailedState extends AuthRegisterPageState {
   final String message;
   AuthEmailVeriFailedState({required this.message});
 }
+
+// Forgot Password States
+final class AuthForgotPasswordLoadingState extends AuthState {}
+
+final class AuthForgotPasswordSuccessState extends AuthState {
+  final String message;
+  final String email;
+  AuthForgotPasswordSuccessState({required this.message, required this.email});
+}
+
+final class AuthForgotPasswordFailureState extends AuthState {
+  final String message;
+  AuthForgotPasswordFailureState({required this.message});
+}
+
+// Reset Password States
+final class AuthResetPasswordLoadingState extends AuthState {}
+
+final class AuthResetPasswordSuccessState extends AuthState {
+  final String message;
+  AuthResetPasswordSuccessState({required this.message});
+}
+
+final class AuthResetPasswordFailureState extends AuthState {
+  final String message;
+  AuthResetPasswordFailureState({required this.message});
+}

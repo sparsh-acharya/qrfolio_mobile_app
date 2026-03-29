@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
+import 'package:qr_folio/core/utils/scaffold_messenger_key.dart';
 import 'package:qr_folio/features/auth/data/datasource/auth_datasource_impl.dart';
 import 'package:qr_folio/features/auth/data/repo/auth_repo_impl.dart';
+import 'package:qr_folio/features/auth/domain/usecase/forgot_password_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/login_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/logout_usecase.dart';
+import 'package:qr_folio/features/auth/domain/usecase/reset_password_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/signup_usecase.dart';
 import 'package:qr_folio/features/auth/domain/usecase/verify_email_usecase.dart';
 import 'package:qr_folio/features/auth/presentation/pages/auth_bloc_helper.dart';
@@ -52,22 +55,19 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(
-          create: (context) => AuthBloc(
-            loginUsecase: LoginUsecase(
-              repo: AuthRepoImpl(datasource: AuthDatasourceImpl(dio: Dio())),
-            ),
-            logoutUsecase: LogoutUsecase(
-              authRepo: AuthRepoImpl(
-                datasource: AuthDatasourceImpl(dio: Dio()),
-              ),
-            ),
-            signupUsecase: SignupUsecase(
-              repo: AuthRepoImpl(datasource: AuthDatasourceImpl(dio: Dio())),
-            ),
-            verifyEmailUsecase: VerifyEmailUsecase(
-              repo: AuthRepoImpl(datasource: AuthDatasourceImpl(dio: Dio())),
-            ),
-          )..add(AuthCheckEvent()),
+          create: (context) {
+            final authRepo = AuthRepoImpl(
+              datasource: AuthDatasourceImpl(dio: Dio()),
+            );
+            return AuthBloc(
+              loginUsecase: LoginUsecase(repo: authRepo),
+              logoutUsecase: LogoutUsecase(authRepo: authRepo),
+              signupUsecase: SignupUsecase(repo: authRepo),
+              verifyEmailUsecase: VerifyEmailUsecase(repo: authRepo),
+              forgotPasswordUsecase: ForgotPasswordUsecase(repo: authRepo),
+              resetPasswordUsecase: ResetPasswordUsecase(repo: authRepo),
+            )..add(AuthCheckEvent());
+          },
         ),
         BlocProvider<UserBloc>(
           create: (context) {
@@ -123,16 +123,18 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        scaffoldMessengerKey: scaffoldMessengerKey,
         debugShowCheckedModeBanner: false,
         title: 'QR Folio',
         theme: ThemeData(
           useMaterial3: true,
           fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
           textTheme: GoogleFonts.plusJakartaSansTextTheme(),
-          colorScheme: ColorScheme.light(
+          canvasColor: AppColors.backgroundPrimary,
+          colorScheme: ColorScheme.dark(
             primary: AppColors.primaryBlue,
             secondary: AppColors.secondaryBlue,
-            surface: AppColors.surfacePrimary,
+            surface: AppColors.cardSecondaryBg,
             error: AppColors.error,
             onPrimary: AppColors.textOnPrimary,
             onSecondary: AppColors.textOnPrimary,

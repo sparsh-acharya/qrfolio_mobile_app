@@ -56,3 +56,21 @@ final class AuthVerifyEmailEvent extends AuthEvent {
     required this.password,
   });
 }
+
+final class AuthForgotPasswordEvent extends AuthEvent {
+  final String email;
+
+  AuthForgotPasswordEvent({required this.email});
+}
+
+final class AuthResetPasswordEvent extends AuthEvent {
+  final String email;
+  final String otp;
+  final String newPassword;
+
+  AuthResetPasswordEvent({
+    required this.email,
+    required this.otp,
+    required this.newPassword,
+  });
+}

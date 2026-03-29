@@ -143,16 +143,20 @@ class _ProfessionalDetailPageState extends State<ProfessionalDetailPage>
                           1,
                           Row(
                             children: [
-                              ProfInfoCard(
-                                professionalIcons: Icons.apartment,
-                                label: "COMPANY",
-                                value: widget.user.professional.companyName,
+                              Expanded(
+                                child: ProfInfoCard(
+                                  professionalIcons: Icons.apartment,
+                                  label: "COMPANY",
+                                  value: widget.user.professional.companyName,
+                                ),
                               ),
                               const SizedBox(width: 10),
-                              ProfInfoCard(
-                                professionalIcons: Icons.person,
-                                label: "DESIGNATION",
-                                value: widget.user.professional.designation,
+                              Expanded(
+                                child: ProfInfoCard(
+                                  professionalIcons: Icons.person,
+                                  label: "DESIGNATION",
+                                  value: widget.user.professional.designation,
+                                ),
                               ),
                             ],
                           ),
@@ -200,57 +204,61 @@ class _ProfessionalDetailPageState extends State<ProfessionalDetailPage>
                           3,
                           Row(
                             children: [
-                              QrIDChip(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                          ) => PublicProfileScreen(
-                                            user: widget.user,
-                                          ),
-                                      transitionsBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                            child,
-                                          ) {
-                                            var curve = Curves.fastOutSlowIn;
-                                            var curvedAnimation =
-                                                CurvedAnimation(
-                                                  parent: animation,
-                                                  curve: curve,
-                                                );
-                                            return FadeTransition(
-                                              opacity: curvedAnimation,
-                                              child: SlideTransition(
-                                                position: Tween<Offset>(
-                                                  begin: const Offset(
-                                                    0.0,
-                                                    0.05,
-                                                  ),
-                                                  end: Offset.zero,
-                                                ).animate(curvedAnimation),
-                                                child: child,
-                                              ),
-                                            );
-                                          },
-                                    ),
-                                  );
-                                },
+                              Expanded(
+                                child: QrIDChip(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => PublicProfileScreen(
+                                              user: widget.user,
+                                            ),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              var curve = Curves.fastOutSlowIn;
+                                              var curvedAnimation =
+                                                  CurvedAnimation(
+                                                    parent: animation,
+                                                    curve: curve,
+                                                  );
+                                              return FadeTransition(
+                                                opacity: curvedAnimation,
+                                                child: SlideTransition(
+                                                  position: Tween<Offset>(
+                                                    begin: const Offset(
+                                                      0.0,
+                                                      0.05,
+                                                    ),
+                                                    end: Offset.zero,
+                                                  ).animate(curvedAnimation),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 10),
-                              ShareProfileChip(
-                                onTap: () {
-                                  Share.share(
-                                    'https://www.qrfolio.net/profile/${widget.user.xid}',
-                                  );
-                                },
+                              Expanded(
+                                child: ShareProfileChip(
+                                  onTap: () {
+                                    Share.share(
+                                      'https://www.qrfolio.net/profile/${widget.user.xid}',
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -298,7 +306,7 @@ class ProfInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 10),
-      width: 155,
+      width: double.infinity,
       height: 145,
       decoration: BoxDecoration(
         gradient: AppColors.cardLinGradBorder,
@@ -338,6 +346,8 @@ class ProfInfoCard extends StatelessWidget {
               const SizedBox(height: 5),
               Text(
                 value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
               ),
             ],

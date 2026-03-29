@@ -147,7 +147,7 @@ class _MediaPageState extends State<MediaPage>
                                           ),
                                     ),
                                     Text(
-                                      "0/50 Images • 1/30 Video links",
+                                      "${imageList.length + docList.length}/50 Images • ${videoList.length}/30 Video links",
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
@@ -629,15 +629,18 @@ class ImageTab extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Container(
-                    width: 100,
-                    height: 100,
                     decoration: BoxDecoration(
                       color: AppColors.cardPrimaryBg,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(mediaList[i].url, fit: BoxFit.cover),
+                      child: Image.network(
+                        mediaList[i].url,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
                   ),
                 ),

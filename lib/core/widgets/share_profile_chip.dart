@@ -17,7 +17,6 @@ class ShareProfileChip extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Container(
       padding: const EdgeInsets.all(5),
-      width: 155,
       height: 50,
       decoration: BoxDecoration(
         color: AppColors.chipPrimaryBg,

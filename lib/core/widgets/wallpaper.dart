@@ -6,7 +6,7 @@ class Wallpaper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
+    return SizedBox.expand(
       child: Container(
         decoration: BoxDecoration(gradient: AppColors.backgroundLinGrad),
       ),

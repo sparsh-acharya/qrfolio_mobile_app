@@ -55,25 +55,24 @@ class ProfessionalDetailsContainer extends StatelessWidget {
   }
 
   Widget _buildDetailRow(String label, String value) {
-    return Stack(
-      alignment: Alignment.centerLeft,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: AppColors.primaryBlueLight,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.primaryBlueLight,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        Align(
-          alignment: Alignment.centerRight,
+        const SizedBox(width: 10),
+        Expanded(
           child: Text(
             value,
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 12,

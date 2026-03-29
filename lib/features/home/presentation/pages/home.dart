@@ -144,57 +144,61 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           2,
                           Row(
                             children: [
-                              QrIDChip(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                          ) => PublicProfileScreen(
-                                            user: widget.userData,
-                                          ),
-                                      transitionsBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                            child,
-                                          ) {
-                                            var curve = Curves.fastOutSlowIn;
-                                            var curvedAnimation =
-                                                CurvedAnimation(
-                                                  parent: animation,
-                                                  curve: curve,
-                                                );
-                                            return FadeTransition(
-                                              opacity: curvedAnimation,
-                                              child: SlideTransition(
-                                                position: Tween<Offset>(
-                                                  begin: const Offset(
-                                                    0.0,
-                                                    0.05,
-                                                  ),
-                                                  end: Offset.zero,
-                                                ).animate(curvedAnimation),
-                                                child: child,
-                                              ),
-                                            );
-                                          },
-                                    ),
-                                  );
-                                },
+                              Expanded(
+                                child: QrIDChip(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => PublicProfileScreen(
+                                              user: widget.userData,
+                                            ),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              var curve = Curves.fastOutSlowIn;
+                                              var curvedAnimation =
+                                                  CurvedAnimation(
+                                                    parent: animation,
+                                                    curve: curve,
+                                                  );
+                                              return FadeTransition(
+                                                opacity: curvedAnimation,
+                                                child: SlideTransition(
+                                                  position: Tween<Offset>(
+                                                    begin: const Offset(
+                                                      0.0,
+                                                      0.05,
+                                                    ),
+                                                    end: Offset.zero,
+                                                  ).animate(curvedAnimation),
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 10),
-                              ShareProfileChip(
-                                onTap: () {
-                                  Share.share(
-                                    'https://www.qrfolio.net/profile/${widget.userData.xid}',
-                                  );
-                                },
+                              Expanded(
+                                child: ShareProfileChip(
+                                  onTap: () {
+                                    Share.share(
+                                      'https://www.qrfolio.net/profile/${widget.userData.xid}',
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),

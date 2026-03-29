@@ -260,6 +260,34 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
               _buildPrimaryButton(
                 text: 'Send OTP',
                 onPressed: () {
+                  if (_emailController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Please enter your email',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.textTertiary),
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                  if (!_isValidEmail(_emailController.text)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Please enter a valid email address',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.textTertiary),
+                        ),
+                      ),
+                    );
+                    return;
+                  }
                   context.read<AuthBloc>().add(
                     AuthSignUpEvent(
                       name: _fullNameController.text,
@@ -389,6 +417,16 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return phoneRegex.hasMatch(phone);
   }
 
+  // Password validation: At least 8 chars, 1 upper, 1 lower, 1 number, 1 special char
+  bool _isPasswordStrong(String password) {
+    if (password.length < 8) return false;
+    if (!password.contains(RegExp(r'[A-Z]'))) return false;
+    if (!password.contains(RegExp(r'[a-z]'))) return false;
+    if (!password.contains(RegExp(r'[0-9]'))) return false;
+    if (!password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) return false;
+    return true;
+  }
+
   void _onStepContinue() {
     if (_currentStep < 2) {
       // Validation logic for each step
@@ -414,6 +452,19 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             SnackBar(
               content: Text(
                 'Passwords do not match',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+              ),
+            ),
+          );
+          return;
+        }
+        if (!_isPasswordStrong(_passwordController.text)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Password must be at least 8 characters long, contain uppercase, lowercase, number and special character',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
@@ -613,171 +664,201 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           if (didPop) return;
           context.read<AuthBloc>().add(AuthReturnHomeEvent());
         },
-        child: Scaffold(
-          resizeToAvoidBottomInset: true,
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            Wallpaper(),
-            Positioned(
-              right: -80,
-              top: -80,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.transparent,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withAlpha(50),
-                      blurRadius: 150,
-                      offset: const Offset(0, 0),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SafeArea(
-              child: Column(
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return Scaffold(
+              resizeToAvoidBottomInset: true,
+              backgroundColor: Colors.transparent,
+              body: Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 15),
-                        _animatedItem(
-                          0,
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xff8BB2FF), Color(0xff2A6AE8)],
-                            ).createShader(bounds),
-                            child: Text(
-                              "QR Folio",
-                              style: Theme.of(context).textTheme.displaySmall
-                                  ?.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
+                  Wallpaper(),
+                  Positioned(
+                    right: -80,
+                    top: -80,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.transparent,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withAlpha(50),
+                            blurRadius: 150,
+                            offset: const Offset(0, 0),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        _animatedItem(
-                          1,
-                          Column(
+                        ],
+                      ),
+                    ),
+                  ),
+                  SafeArea(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 16.0,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                "Create your\nAccount",
-                                style: Theme.of(context).textTheme.displaySmall
-                                    ?.copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Already have an account? ",
-                                    style: Theme.of(context).textTheme.bodySmall
+                              const SizedBox(height: 15),
+                              _animatedItem(
+                                0,
+                                ShaderMask(
+                                  shaderCallback:
+                                      (bounds) => const LinearGradient(
+                                        colors: [
+                                          Color(0xff8BB2FF),
+                                          Color(0xff2A6AE8),
+                                        ],
+                                      ).createShader(bounds),
+                                  child: Text(
+                                    "QR Folio",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displaySmall
                                         ?.copyWith(
                                           color: AppColors.textPrimary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      context.read<AuthBloc>().add(
-                                        AuthLoginPageEvent(),
-                                      );
-                                    },
-                                    child: Text(
-                                      "Sign In",
-                                      style: Theme.of(context).textTheme.bodySmall
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _animatedItem(
+                                1,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Create your\nAccount",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displaySmall
                                           ?.copyWith(
-                                            color: AppColors.primaryBlue,
+                                            color: AppColors.textPrimary,
                                             fontWeight: FontWeight.bold,
                                           ),
                                     ),
-                                  ),
-                                ],
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Already have an account? ",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: AppColors.textPrimary,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            context.read<AuthBloc>().add(
+                                              AuthLoginPageEvent(),
+                                            );
+                                          },
+                                          child: Text(
+                                            "Sign In",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: AppColors.primaryBlue,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
+                          ),
+                        ),
+                        Expanded(
+                          child: _animatedItem(
+                            2,
+                            Theme(
+                              data: ThemeData(
+                                colorScheme: ColorScheme.dark(
+                                  primary: AppColors.primaryBlue,
+                                ),
+                                canvasColor: Colors.transparent,
+                              ),
+                              child: Stepper(
+                                type: StepperType.vertical,
+                                currentStep: _currentStep,
+                                onStepContinue: _onStepContinue,
+                                onStepCancel: _onStepCancel,
+                                controlsBuilder: (context, details) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildPrimaryButton(
+                                          text:
+                                              _currentStep == 2
+                                                  ? 'Sign Up'
+                                                  : 'Continue',
+                                          onPressed: details.onStepContinue!,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Container(
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                            color: Colors.transparent,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color:
+                                                  AppColors.cardSecondaryBorder,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: TextButton(
+                                            onPressed: details.onStepCancel,
+                                            child: Text(
+                                              _currentStep == 0
+                                                  ? 'Back'
+                                                  : 'Previous',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color:
+                                                        AppColors.textPrimary,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                                steps: _buildSteps(),
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: _animatedItem(
-                      2,
-                      Theme(
-                        data: ThemeData(
-                          colorScheme: ColorScheme.dark(
-                            primary: AppColors.primaryBlue,
-                          ),
-                          canvasColor: Colors.transparent,
-                        ),
-                        child: Stepper(
-                          type: StepperType.vertical,
-                          currentStep: _currentStep,
-                          onStepContinue: _onStepContinue,
-                          onStepCancel: _onStepCancel,
-                          controlsBuilder: (context, details) {
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: _buildPrimaryButton(
-                                    text: _currentStep == 2
-                                        ? 'Sign Up'
-                                        : 'Continue',
-                                    onPressed: details.onStepContinue!,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: AppColors.cardSecondaryBorder,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: TextButton(
-                                      onPressed: details.onStepCancel,
-                                      child: Text(
-                                        _currentStep == 0 ? 'Back' : 'Previous',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: AppColors.textPrimary,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                          steps: _buildSteps(),
-                        ),
-                      ),
+                  if (state is AuthSignupLoadingState)
+                    Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: const Center(child: CircularProgressIndicator()),
                     ),
-                  ),
                 ],
               ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
     ),
   );
 }

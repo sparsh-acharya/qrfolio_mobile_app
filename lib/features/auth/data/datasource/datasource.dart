@@ -24,4 +24,10 @@ abstract class AuthDatasource {
     required String otp,
     required String password,
   });
+  FutureEither<String> forgotPassword({required String email});
+  FutureEither<String> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  });
 }

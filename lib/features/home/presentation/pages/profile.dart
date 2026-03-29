@@ -269,7 +269,7 @@ class _ProfilePageState extends State<ProfilePage>
                             _animatedItem(
                               1,
                               Container(
-                                width: 340,
+                                width: double.infinity,
                                 height: 260,
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(

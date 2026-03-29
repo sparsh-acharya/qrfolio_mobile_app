@@ -65,4 +65,24 @@ class AuthRepoImpl implements AuthRepo {
     );
     return result.fold((failure) => left(failure), (pass) => right(pass));
   }
+
+  @override
+  FutureEither<String> forgotPassword({required String email}) async {
+    final result = await datasource.forgotPassword(email: email);
+    return result.fold((failure) => left(failure), (msg) => right(msg));
+  }
+
+  @override
+  FutureEither<String> resetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final result = await datasource.resetPassword(
+      email: email,
+      otp: otp,
+      newPassword: newPassword,
+    );
+    return result.fold((failure) => left(failure), (msg) => right(msg));
+  }
 }
