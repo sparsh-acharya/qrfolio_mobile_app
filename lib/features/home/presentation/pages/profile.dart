@@ -9,6 +9,7 @@ import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:qr_folio/features/home/presentation/widgets/info_tab.dart';
 import 'package:qr_folio/features/home/presentation/widgets/social_tab.dart';
 import 'package:qr_folio/features/home/presentation/widgets/business_tab.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   final UserDataEntity user;
@@ -26,6 +27,7 @@ class _ProfilePageState extends State<ProfilePage>
   late final AnimationController _animController;
   late final List<Animation<double>> _fadeAnims;
   late final List<Animation<Offset>> _slideAnims;
+  final ImagePicker _picker = ImagePicker();
 
   static const _itemCount = 4;
 
@@ -37,6 +39,18 @@ class _ProfilePageState extends State<ProfilePage>
     print(value.runtimeType);
     print("----------update object----------");
     print(_updatedData);
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+    if (image != null) {
+      if (mounted) {
+        context.read<UserBloc>().add(UploadPhotoEvent(filePath: image.path));
+      }
+    }
   }
 
   @override
@@ -102,6 +116,40 @@ class _ProfilePageState extends State<ProfilePage>
                 state.message,
                 style: TextStyle(color: AppColors.textTertiary),
               ),
+            ),
+          );
+        } else if (state is PhotoUploadedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Refresh user data after upload
+          context.read<UserBloc>().add(GetUserDataEvent());
+        } else if (state is PhotoUploadErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.message,
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is UploadingPhotoState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Uploading photo...",
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+              ),
+              duration: Duration(seconds: 1),
             ),
           );
         } else if (state is UserErrorState) {
@@ -242,7 +290,78 @@ class _ProfilePageState extends State<ProfilePage>
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: AppColors.cardPrimaryBg,
+                                            border: Border.all(
+                                              color: AppColors.primaryBlue,
+                                              width: 2,
+                                            ),
                                           ),
+                                          child:
+                                              widget.user.profilePhotoUrl !=
+                                                  null
+                                              ? ClipOval(
+                                                  child: Image.network(
+                                                    widget
+                                                        .user
+                                                        .profilePhotoUrl!,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder:
+                                                        (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
+                                                          return Center(
+                                                            child: Text(
+                                                              widget.user.core.name !=
+                                                                          null &&
+                                                                      widget
+                                                                          .user
+                                                                          .core
+                                                                          .name!
+                                                                          .isNotEmpty
+                                                                  ? widget
+                                                                        .user
+                                                                        .core
+                                                                        .name![0]
+                                                                        .toUpperCase()
+                                                                  : 'U',
+                                                              style: TextStyle(
+                                                                fontSize: 35,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: AppColors
+                                                                    .primaryBlue,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                  ),
+                                                )
+                                              : Center(
+                                                  child: Text(
+                                                    widget.user.core.name !=
+                                                                null &&
+                                                            widget
+                                                                .user
+                                                                .core
+                                                                .name!
+                                                                .isNotEmpty
+                                                        ? widget
+                                                              .user
+                                                              .core
+                                                              .name![0]
+                                                              .toUpperCase()
+                                                        : 'U',
+                                                    style: TextStyle(
+                                                      fontSize: 35,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          AppColors.primaryBlue,
+                                                    ),
+                                                  ),
+                                                ),
                                         ),
                                         Positioned(
                                           bottom: 0,
@@ -254,8 +373,9 @@ class _ProfilePageState extends State<ProfilePage>
                                               shape: BoxShape.circle,
                                               color: AppColors.primaryBlue,
                                             ),
-                                            child: const Center(
-                                              child: Icon(
+                                            child: IconButton(
+                                              onPressed: _pickAndUploadImage,
+                                              icon: const Icon(
                                                 Icons.camera_alt,
                                                 color: AppColors.textOnPrimary,
                                                 size: 24,

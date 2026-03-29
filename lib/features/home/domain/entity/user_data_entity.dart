@@ -6,6 +6,7 @@ class UserDataEntity {
   final String id;
   final String xid;
   final int version;
+  final String? profilePhotoUrl;
 
   final AuthInfo auth;
   final CoreUserInfo core;
@@ -19,6 +20,7 @@ class UserDataEntity {
     required this.id,
     required this.xid,
     required this.version,
+    this.profilePhotoUrl,
     required this.auth,
     required this.core,
     required this.personal,

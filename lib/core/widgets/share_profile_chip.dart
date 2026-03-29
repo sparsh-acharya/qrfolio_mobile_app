@@ -3,13 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 
 class ShareProfileChip extends StatelessWidget {
+  final VoidCallback? onTap;
+
   const ShareProfileChip({
     super.key,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       padding: const EdgeInsets.all(5),
       width: 155,
       height: 50,
@@ -46,6 +52,7 @@ class ShareProfileChip extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

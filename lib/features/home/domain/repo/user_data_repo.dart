@@ -4,4 +4,5 @@ import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 abstract class UserDataRepo {
   FutureEither<UserDataEntity> getUserData();
   FutureVoid updateUserData(Map<String, dynamic> updatedData);
+  FutureVoid uploadPhoto(String filePath);
 }

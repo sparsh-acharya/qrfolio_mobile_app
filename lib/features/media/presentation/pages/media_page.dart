@@ -165,18 +165,36 @@ class _MediaPageState extends State<MediaPage>
                                       context,
                                       PageRouteBuilder(
                                         opaque: false,
-                                        transitionDuration: const Duration(milliseconds: 300),
-                                        pageBuilder: (context, animation, secondaryAnimation) =>
-                                            AddMediaPage(user: widget.user),
-                                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                          const begin = Offset(0.0, 1.0);
-                                          const curve = Curves.easeOutCubic;
-                                          var tween = Tween(begin: begin, end: Offset.zero).chain(CurveTween(curve: curve));
-                                          return SlideTransition(
-                                            position: animation.drive(tween),
-                                            child: child,
-                                          );
-                                        },
+                                        transitionDuration: const Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) =>
+                                                AddMediaPage(user: widget.user),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              const begin = Offset(0.0, 1.0);
+                                              const curve = Curves.easeOutCubic;
+                                              var tween = Tween(
+                                                begin: begin,
+                                                end: Offset.zero,
+                                              ).chain(CurveTween(curve: curve));
+                                              return SlideTransition(
+                                                position: animation.drive(
+                                                  tween,
+                                                ),
+                                                child: child,
+                                              );
+                                            },
                                       ),
                                     );
                                   },
@@ -352,46 +370,79 @@ class DocTab extends StatelessWidget {
       child: ListView.builder(
         itemCount: mediaList.length,
         itemBuilder: (_, i) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: AppColors.cardSecondaryBg,
-              border: Border.all(color: AppColors.cardSecondaryBorder),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  margin: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardSecondaryBorder,
-                    borderRadius: BorderRadius.circular(12),
+          return GestureDetector(
+            onTap: () async {
+              final uri = Uri.parse(mediaList[i].url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: AppColors.cardSecondaryBg,
+                border: Border.all(color: AppColors.cardSecondaryBorder),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.cardSecondaryBorder,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.document_scanner,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.document_scanner,
-                    color: Colors.white,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            mediaList[i].title.isEmpty
+                                ? "Untitled"
+                                : mediaList[i].title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            mediaList[i].mimeType,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppColors.textTertiary,
+                                  fontSize: 11,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                Text(
-                  "Title: ${mediaList[i].title}\nType: ${mediaList[i].mimeType}",
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 12,
-                    color: AppColors.textTertiary,
+
+                  IconButton(
+                    onPressed: () {
+                      context.read<MediaBloc>().add(
+                        DeleteMediaEvent(mediaId: mediaList[i].id),
+                      );
+                    },
+                    icon: Icon(Icons.delete, color: AppColors.error),
                   ),
-                ),
-                Spacer(),
-                IconButton(
-                  onPressed: () {
-                    context.read<MediaBloc>().add(
-                      DeleteMediaEvent(mediaId: mediaList[i].id),
-                    );
-                  },
-                  icon: Icon(Icons.delete, color: AppColors.error),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -554,37 +605,57 @@ class ImageTab extends StatelessWidget {
           mainAxisSpacing: 10,
         ),
         itemBuilder: (_, i) {
-          return Stack(
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.cardPrimaryBg,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(mediaList[i].url, fit: BoxFit.cover),
+          return GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (_) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  insetPadding: const EdgeInsets.all(10),
+                  child: InteractiveViewer(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        mediaList[i].url,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                top: -8,
-                right: -8,
-                child: IconButton(
-                  onPressed: () {
-                    print("Deleting media with ID: ${mediaList[i].id}");
-                    context.read<MediaBloc>().add(
-                      DeleteMediaEvent(mediaId: mediaList[i].id),
-                    );
-                  },
-                  icon: Icon(Icons.delete, color: AppColors.error),
+              );
+            },
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: AppColors.cardPrimaryBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(mediaList[i].url, fit: BoxFit.cover),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Positioned(
+                  top: -8,
+                  right: -8,
+                  child: IconButton(
+                    onPressed: () {
+                      print("Deleting media with ID: ${mediaList[i].id}");
+                      context.read<MediaBloc>().add(
+                        DeleteMediaEvent(mediaId: mediaList[i].id),
+                      );
+                    },
+                    icon: Icon(Icons.delete, color: AppColors.error),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),

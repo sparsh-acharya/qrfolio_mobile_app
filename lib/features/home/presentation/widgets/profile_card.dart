@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 import 'package:qr_folio/core/utils/profile_nav.dart';
@@ -42,6 +41,40 @@ class ProfileCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: AppColors.cardPrimaryBg,
                 ),
+                child: user.profilePhotoUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          user.profilePhotoUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Text(
+                                user.core.name != null &&
+                                        user.core.name!.isNotEmpty
+                                    ? user.core.name![0].toUpperCase()
+                                    : 'U',
+                                style: TextStyle(
+                                  fontSize: 35,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryBlue,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          user.core.name != null && user.core.name!.isNotEmpty
+                              ? user.core.name![0].toUpperCase()
+                              : 'U',
+                          style: TextStyle(
+                            fontSize: 35,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
               ),
               Positioned(
                 top: 10,

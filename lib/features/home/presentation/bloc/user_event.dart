@@ -19,3 +19,9 @@ class NavItemSelectedEvent extends UserEvent {
   NavItemSelectedEvent({required this.index});
 }
 
+class UploadPhotoEvent extends UserEvent {
+  final String filePath;
+
+  UploadPhotoEvent({required this.filePath});
+}
+

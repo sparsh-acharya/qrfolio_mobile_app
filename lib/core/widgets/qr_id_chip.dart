@@ -2,25 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 
 class QrIDChip extends StatelessWidget {
+  final VoidCallback? onTap;
   const QrIDChip({
     super.key,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(5),
-      width: 155,
-      height: 50,
-      decoration: BoxDecoration(
-        color: AppColors.chipSecondaryBg,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: AppColors.chipSecondaryBorder,
-          width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        width: 155,
+        height: 50,
+        decoration: BoxDecoration(
+          color: AppColors.chipSecondaryBg,
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(
+            color: AppColors.chipSecondaryBorder,
+            width: 1,
+          ),
         ),
-      ),
-      child: Row(
+        child: Row(
         children: [
           Container(
             width: 40,
@@ -45,6 +49,6 @@ class QrIDChip extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }

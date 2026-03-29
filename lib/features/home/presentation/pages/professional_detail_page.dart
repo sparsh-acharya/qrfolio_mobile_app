@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_folio/core/utils/profile_nav.dart';
 import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:qr_folio/core/theme/app_colors.dart';
 import 'package:qr_folio/core/widgets/appbar.dart';
@@ -9,6 +10,8 @@ import 'package:qr_folio/core/widgets/wallpaper.dart';
 import 'package:qr_folio/core/widgets/navbar.dart';
 import 'package:qr_folio/core/widgets/professional_detail_card.dart';
 import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
+import 'package:qr_folio/features/home/presentation/pages/public_profile_screen.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProfessionalDetailPage extends StatefulWidget {
   final UserDataEntity user;
@@ -122,7 +125,11 @@ class _ProfessionalDetailPageState extends State<ProfessionalDetailPage>
                                 ),
                               ),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () => goTpProfile(
+                                  context,
+                                  widget.user,
+                                  initialIndex: 1,
+                                ),
                                 icon: Icon(Icons.edit),
                                 iconSize: 20,
                                 color: AppColors.primaryBlueLight,
@@ -193,9 +200,58 @@ class _ProfessionalDetailPageState extends State<ProfessionalDetailPage>
                           3,
                           Row(
                             children: [
-                              QrIDChip(),
+                              QrIDChip(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                          ) => PublicProfileScreen(
+                                            user: widget.user,
+                                          ),
+                                      transitionsBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                            child,
+                                          ) {
+                                            var curve = Curves.fastOutSlowIn;
+                                            var curvedAnimation =
+                                                CurvedAnimation(
+                                                  parent: animation,
+                                                  curve: curve,
+                                                );
+                                            return FadeTransition(
+                                              opacity: curvedAnimation,
+                                              child: SlideTransition(
+                                                position: Tween<Offset>(
+                                                  begin: const Offset(
+                                                    0.0,
+                                                    0.05,
+                                                  ),
+                                                  end: Offset.zero,
+                                                ).animate(curvedAnimation),
+                                                child: child,
+                                              ),
+                                            );
+                                          },
+                                    ),
+                                  );
+                                },
+                              ),
                               const SizedBox(width: 10),
-                              ShareProfileChip(),
+                              ShareProfileChip(
+                                onTap: () {
+                                  Share.share(
+                                    'https://www.qrfolio.net/profile/${widget.user.xid}',
+                                  );
+                                },
+                              ),
                             ],
                           ),
                         ),

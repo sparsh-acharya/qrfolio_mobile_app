@@ -7,6 +7,7 @@ class UserDataModel {
   final String id;
   final String xid;
   final int version;
+  final String? profilePhotoUrl;
 
   final AuthInfoModel auth;
   final CoreUserInfoModel core;
@@ -20,6 +21,7 @@ class UserDataModel {
     required this.id,
     required this.xid,
     required this.version,
+    this.profilePhotoUrl,
     required this.auth,
     required this.core,
     required this.personal,
@@ -34,6 +36,7 @@ class UserDataModel {
       id: json['authUserId'] ?? '',
       xid: json['_id'] ?? '',
       version: json['__v'] ?? 0,
+      profilePhotoUrl: json['profilePhoto'] ?? '',
 
       auth: AuthInfoModel.fromJson(json),
       core: CoreUserInfoModel.fromJson(json),
@@ -50,6 +53,7 @@ class UserDataModel {
       id: id,
       xid: xid,
       version: version,
+      profilePhotoUrl: profilePhotoUrl,
       auth: auth.toEntity(),
       core: core.toEntity(),
       personal: personal.toEntity(),
@@ -62,7 +66,7 @@ class UserDataModel {
 
   @override
   String toString() =>
-      "UserDataModel(id:$id, xid:$xid, version:$version, token:${auth.token}, name:${core.name}, bloodGroup:${personal.bloodGroup}, insta:${social.instagram}, company:${professional.companyName}, qrurl:${qr.url}, createdAt:${system.createdAt})";
+      "UserDataModel(id:$id, xid:$xid, version:$version, token:${auth.token}, name:${core.name}, bloodGroup:${personal.bloodGroup}, insta:${social.instagram}, company:${professional.companyName}, qrurl:${qr.url}, createdAt:${system.createdAt}), profilePhotoUrl:$profilePhotoUrl";
 }
 
 class AuthInfoModel {

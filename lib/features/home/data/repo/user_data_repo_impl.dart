@@ -22,4 +22,10 @@ class UserDataRepoImpl implements UserDataRepo {
     final result = await datasource.updateUserData(updatedData);
     return result.fold((failure) => left(failure), (_) => right(null));
   }
+
+  @override
+  FutureVoid uploadPhoto(String filePath) async {
+    final result = await datasource.uploadPhoto(filePath);
+    return result.fold((failure) => left(failure), (_) => right(null));
+  }
 }

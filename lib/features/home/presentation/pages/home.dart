@@ -11,6 +11,8 @@ import 'package:qr_folio/core/widgets/share_profile_chip.dart';
 import 'package:qr_folio/core/widgets/wallpaper.dart';
 import 'package:qr_folio/features/home/domain/entity/user_data_entity.dart';
 import 'package:qr_folio/features/home/presentation/widgets/profile_card.dart';
+import 'package:qr_folio/features/home/presentation/pages/public_profile_screen.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Home extends StatefulWidget {
   final UserDataEntity userData;
@@ -142,9 +144,58 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           2,
                           Row(
                             children: [
-                              QrIDChip(),
+                              QrIDChip(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                          ) => PublicProfileScreen(
+                                            user: widget.userData,
+                                          ),
+                                      transitionsBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                            child,
+                                          ) {
+                                            var curve = Curves.fastOutSlowIn;
+                                            var curvedAnimation =
+                                                CurvedAnimation(
+                                                  parent: animation,
+                                                  curve: curve,
+                                                );
+                                            return FadeTransition(
+                                              opacity: curvedAnimation,
+                                              child: SlideTransition(
+                                                position: Tween<Offset>(
+                                                  begin: const Offset(
+                                                    0.0,
+                                                    0.05,
+                                                  ),
+                                                  end: Offset.zero,
+                                                ).animate(curvedAnimation),
+                                                child: child,
+                                              ),
+                                            );
+                                          },
+                                    ),
+                                  );
+                                },
+                              ),
                               const SizedBox(width: 10),
-                              ShareProfileChip(),
+                              ShareProfileChip(
+                                onTap: () {
+                                  Share.share(
+                                    'https://www.qrfolio.net/profile/${widget.userData.xid}',
+                                  );
+                                },
+                              ),
                             ],
                           ),
                         ),
@@ -221,7 +272,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () {},
+                                      onPressed: () => goTpProfile(
+                                        context,
+                                        widget.userData,
+                                        initialIndex: 1,
+                                      ),
                                       icon: Icon(Icons.edit),
                                       iconSize: 20,
                                       color: AppColors.primaryBlueLight,

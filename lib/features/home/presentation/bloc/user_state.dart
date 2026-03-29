@@ -29,6 +29,21 @@ class UpdatedUserDataState extends UserState {
   UpdatedUserDataState(this.message);
 }
 
+//Photo Upload States
+class UploadingPhotoState extends UserState {}
+
+class PhotoUploadedState extends UserState {
+  final String message;
+
+  PhotoUploadedState(this.message);
+}
+
+class PhotoUploadErrorState extends UserState {
+  final String message;
+
+  PhotoUploadErrorState(this.message);
+}
+
 //Navigation State
 class NavItemSelectedState extends UserState {
   final int index;

@@ -15,6 +15,7 @@ import 'package:qr_folio/features/home/data/datasource/user_datasource_impl.dart
 import 'package:qr_folio/features/home/data/repo/user_data_repo_impl.dart';
 import 'package:qr_folio/features/home/domain/usecase/get_user_usecase.dart';
 import 'package:qr_folio/features/home/domain/usecase/update_user_usecase.dart';
+import 'package:qr_folio/features/home/domain/usecase/upload_photo_usecase.dart';
 import 'package:qr_folio/features/home/presentation/bloc/user_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_folio/features/media/data/datasource/media_datasource_impl.dart';
@@ -69,18 +70,16 @@ class MyApp extends StatelessWidget {
           )..add(AuthCheckEvent()),
         ),
         BlocProvider<UserBloc>(
-          create: (context) => UserBloc(
-            getUserUsecase: GetUserUsecase(
-              repo: UserDataRepoImpl(
-                datasource: UserDatasourceImpl(dio: Dio()),
-              ),
-            ),
-            updateUserUsecase: UpdateUserUsecase(
-              repo: UserDataRepoImpl(
-                datasource: UserDatasourceImpl(dio: Dio()),
-              ),
-            ),
-          ),
+          create: (context) {
+            final userRepo = UserDataRepoImpl(
+              datasource: UserDatasourceImpl(dio: Dio()),
+            );
+            return UserBloc(
+              getUserUsecase: GetUserUsecase(repo: userRepo),
+              updateUserUsecase: UpdateUserUsecase(repo: userRepo),
+              uploadPhotoUsecase: UploadPhotoUsecase(repo: userRepo),
+            );
+          },
         ),
         BlocProvider<MediaBloc>(
           create: (context) => MediaBloc(

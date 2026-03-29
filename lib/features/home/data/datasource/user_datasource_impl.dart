@@ -103,22 +103,48 @@ class UserDatasourceImpl implements UserDatasource {
   @override
   FutureVoid updateUserData(Map<String, dynamic> updatedData) async {
     try {
+      final String? token = await AppStorage().getToken();
       final result = await dio.put(
         '$baseUrl/user/edit-profile',
         data: jsonEncode(updatedData),
         options: Options(
-          headers: {"Authorization": "Bearer ${await AppStorage().getToken()}"},
+          headers: {"Authorization": "Bearer $token"},
         ),
       );
       if (result.statusCode == 200) {
-        return Future.value(right(null));
+        return right(null);
       } else {
-        return Future.value(
-          left(ApiError(message: 'Failed to update user data')),
-        );
+        return left(ApiError(message: 'Failed to update user data'));
       }
     } catch (e) {
-      return Future.value(left(ApiError(message: 'An error occurred: $e')));
+      return left(ApiError(message: 'An error occurred: $e'));
+    }
+  }
+
+  @override
+  FutureVoid uploadPhoto(String filePath) async {
+    try {
+      final String? token = await AppStorage().getToken();
+      final formData = FormData.fromMap({
+        'photo': await MultipartFile.fromFile(filePath),
+      });
+
+      final result = await dio.post(
+        '$baseUrl/user/upload-photo',
+        data: formData,
+        options: Options(
+          headers: {"Authorization": "Bearer $token"},
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      if (result.statusCode == 200) {
+        return right(null);
+      } else {
+        return left(ApiError(message: 'Failed to upload photo'));
+      }
+    } catch (e) {
+      return left(ApiError(message: 'An error occurred: $e'));
     }
   }
 }
